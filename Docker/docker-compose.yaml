@@ -1,0 +1,48 @@
+version: '3.2'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_srs
+    ports:
+    - 9090:9090
+    command: 
+    - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+    - cadvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor_srs
+    privileged: true
+    ports:
+    - 8081:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker
+    command: 
+    - --housekeeping_interval=10s
+    depends_on:
+    - srsenb
+  srsenb:
+    build:
+      context: /home/naposto/bin
+      dockerfile: /home/naposto/phd/srsRAN/Docker/Dockerfile
+    image: srsenb
+    container_name: srsenb
+    cap_add:
+    - CAP_SYS_NICE # set thread priority for real time thread scheduling
+    - CAP_IPC_LOCK # for mlockall() syscall
+    volumes:
+    - ./srsran_config.json:/var/cadvisor/srsran_config.json:ro
+    ports:
+    - 8080:8080
+    command: ["srsenb", 
+              "--expert.metrics_http_scrape_enable=true",
+              "--expert.metrics_http_scrape_port=8080",
+              "--rf.device_name=zmq", 
+              "--rf.device_args=\"fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6\""]
+  

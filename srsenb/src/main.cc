@@ -46,6 +46,7 @@
 #include "srsenb/hdr/metrics_csv.h"
 #include "srsenb/hdr/metrics_json.h"
 #include "srsenb/hdr/metrics_stdout.h"
+#include "srsenb/hdr/metrics_http_scrape.h"
 #include "srsran/common/enb_events.h"
 
 using namespace std;
@@ -223,6 +224,8 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("expert.metrics_period_secs", bpo::value<float>(&args->general.metrics_period_secs)->default_value(1.0), "Periodicity for metrics in seconds.")
     ("expert.metrics_csv_enable",  bpo::value<bool>(&args->general.metrics_csv_enable)->default_value(false), "Write metrics to CSV file.")
     ("expert.metrics_csv_filename", bpo::value<string>(&args->general.metrics_csv_filename)->default_value("/tmp/enb_metrics.csv"), "Metrics CSV filename.")
+    ("expert.metrics_http_scrape_enable",  bpo::value<bool>(&args->general.http_scrape_enable)->default_value(false), "Export metrics to HTTP")
+    ("expert.metrics_http_scrape_port",  bpo::value<uint32_t>(&args->general.http_scrape_port)->default_value(8080), "HTTP Endpoint bind-port")
     ("expert.pusch_max_its", bpo::value<uint32_t>(&args->phy.pusch_max_its)->default_value(8), "Maximum number of turbo decoder iterations for LTE.")
     ("expert.pusch_8bit_decoder", bpo::value<bool>(&args->phy.pusch_8bit_decoder)->default_value(false), "Use 8-bit for LLR representation and turbo decoder trellis computation (Experimental).")
     ("expert.pusch_meas_evm", bpo::value<bool>(&args->phy.pusch_meas_evm)->default_value(false), "Enable/Disable PUSCH EVM measure.")
@@ -457,96 +460,96 @@ void parse_args(all_args_t* args, int argc, char* argv[])
   srsran_use_standard_symbol_size(use_standard_lte_rates);
 }
 
-static bool do_metrics = false;
-static bool do_padding = false;
+//static bool do_metrics = false;
+//static bool do_padding = false;
 
-static void execute_cmd(metrics_stdout* metrics, srsenb::enb_command_interface* control, const string& cmd_line)
-{
-  vector<string> cmd;
-  srsran::string_parse_list(cmd_line, ' ', cmd);
-  if (cmd[0] == "t") {
-    do_metrics = !do_metrics;
-    if (do_metrics) {
-      cout << "Enter t to stop trace." << endl;
-    } else {
-      cout << "Enter t to restart trace." << endl;
-    }
-    metrics->toggle_print(do_metrics);
-  } else if (cmd[0] == "sleep") {
-    if (cmd.size() != 2) {
-      cout << "Usage: " << cmd[0] << " [number of seconds]" << endl;
-      return;
-    }
-    int nseconds = srsran::string_cast<int>(cmd[1]);
-    if (nseconds <= 0) {
-      return;
-    }
-    std::this_thread::sleep_for(std::chrono::seconds(nseconds));
-  } else if (cmd[0] == "p") {
-    do_padding = !do_padding;
-    if (do_padding) {
-      cout << "Enter p to stop padding." << endl;
-    } else {
-      cout << "Enter p to restart padding." << endl;
-    }
-    control->toggle_padding();
-  } else if (cmd[0] == "q") {
-    raise(SIGTERM);
-  } else if (cmd[0] == "cell_gain") {
-    if (cmd.size() != 3) {
-      cout << "Usage: " << cmd[0] << " [cell identifier] [gain in dB]" << endl;
-      return;
-    }
+//static void execute_cmd(metrics_stdout* metrics, srsenb::enb_command_interface* control, const string& cmd_line)
+//{
+//  vector<string> cmd;
+//  srsran::string_parse_list(cmd_line, ' ', cmd);
+//  if (cmd[0] == "t") {
+//    do_metrics = !do_metrics;
+//    if (do_metrics) {
+//      cout << "Enter t to stop trace." << endl;
+//    } else {
+//      cout << "Enter t to restart trace." << endl;
+//    }
+//    metrics->toggle_print(do_metrics);
+//  } else if (cmd[0] == "sleep") {
+//    if (cmd.size() != 2) {
+//      cout << "Usage: " << cmd[0] << " [number of seconds]" << endl;
+//      return;
+//    }
+//    int nseconds = srsran::string_cast<int>(cmd[1]);
+//    if (nseconds <= 0) {
+//      return;
+//    }
+//    std::this_thread::sleep_for(std::chrono::seconds(nseconds));
+//  } else if (cmd[0] == "p") {
+//    do_padding = !do_padding;
+//    if (do_padding) {
+//      cout << "Enter p to stop padding." << endl;
+//    } else {
+//      cout << "Enter p to restart padding." << endl;
+//    }
+//    control->toggle_padding();
+//  } else if (cmd[0] == "q") {
+//    raise(SIGTERM);
+//  } else if (cmd[0] == "cell_gain") {
+//    if (cmd.size() != 3) {
+//      cout << "Usage: " << cmd[0] << " [cell identifier] [gain in dB]" << endl;
+//      return;
+//    }
+//
+//    // Parse command arguments
+//    uint32_t cell_id = srsran::string_cast<uint32_t>(cmd[1]);
+//    float    gain_db = srsran::string_cast<float>(cmd[2]);
+//
+//    // Set cell gain
+//    control->cmd_cell_gain(cell_id, gain_db);
+//  } else if (cmd[0] == "flush") {
+//    if (cmd.size() != 1) {
+//      cout << "Usage: " << cmd[0] << endl;
+//      return;
+//    }
+//    srslog::flush();
+//    cout << "Flushed log file buffers" << endl;
+//  } else {
+//    cout << "Available commands: " << endl;
+//    cout << "          t: starts console trace" << endl;
+//    cout << "          q: quit srsenb" << endl;
+//    cout << "  cell_gain: set relative cell gain" << endl;
+//    cout << "      sleep: pauses the commmand line operation for a given time in seconds" << endl;
+//    cout << "          p: starts MAC padding" << endl;
+//    cout << "      flush: flushes the buffers for the log file" << endl;
+//    cout << endl;
+//  }
+//}
 
-    // Parse command arguments
-    uint32_t cell_id = srsran::string_cast<uint32_t>(cmd[1]);
-    float    gain_db = srsran::string_cast<float>(cmd[2]);
-
-    // Set cell gain
-    control->cmd_cell_gain(cell_id, gain_db);
-  } else if (cmd[0] == "flush") {
-    if (cmd.size() != 1) {
-      cout << "Usage: " << cmd[0] << endl;
-      return;
-    }
-    srslog::flush();
-    cout << "Flushed log file buffers" << endl;
-  } else {
-    cout << "Available commands: " << endl;
-    cout << "          t: starts console trace" << endl;
-    cout << "          q: quit srsenb" << endl;
-    cout << "  cell_gain: set relative cell gain" << endl;
-    cout << "      sleep: pauses the commmand line operation for a given time in seconds" << endl;
-    cout << "          p: starts MAC padding" << endl;
-    cout << "      flush: flushes the buffers for the log file" << endl;
-    cout << endl;
-  }
-}
-
-static void* input_loop(metrics_stdout* metrics, srsenb::enb_command_interface* control)
-{
-  struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
-  string        input_line;
-  while (running) {
-    int ret = poll(&pfd, 1, 1000); // query stdin with a timeout of 1000ms
-    if (ret == 1) {
-      // there is user input to read
-      getline(cin, input_line);
-      if (cin.eof() || cin.bad()) {
-        cout << "Closing stdin thread." << endl;
-        break;
-      } else if (not input_line.empty()) {
-        list<string> cmd_list;
-        srsran::string_parse_list(input_line, ';', cmd_list);
-
-        for (const string& cmd : cmd_list) {
-          execute_cmd(metrics, control, cmd);
-        }
-      }
-    }
-  }
-  return nullptr;
-}
+//static void* input_loop(metrics_stdout* metrics, srsenb::enb_command_interface* control)
+//{
+//  struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
+//  string        input_line;
+//  while (running) {
+//    int ret = poll(&pfd, 1, 1000); // query stdin with a timeout of 1000ms
+//    if (ret == 1) {
+//      // there is user input to read
+//      getline(cin, input_line);
+//      if (cin.eof() || cin.bad()) {
+//        cout << "Closing stdin thread." << endl;
+//        break;
+//      } else if (not input_line.empty()) {
+//        list<string> cmd_list;
+//        srsran::string_parse_list(input_line, ';', cmd_list);
+//
+//        for (const string& cmd : cmd_list) {
+//          execute_cmd(metrics, control, cmd);
+//        }
+//      }
+//    }
+//  }
+//  return nullptr;
+//}
 
 /// Adjusts the input value in args from kbytes to bytes.
 static size_t fixup_log_file_maxsize(int x)
@@ -575,8 +578,8 @@ int main(int argc, char* argv[])
   add_emergency_cleanup_handler(emergency_cleanup_handler, nullptr);
 
   all_args_t                         args = {};
-  srsran::metrics_hub<enb_metrics_t> metricshub;
-  metrics_stdout                     metrics_screen;
+//  srsran::metrics_hub<enb_metrics_t> metricshub;
+//  metrics_stdout                     metrics_screen;
 
   cout << "---  Software Radio Systems LTE eNodeB  ---" << endl << endl;
 
@@ -637,23 +640,19 @@ int main(int argc, char* argv[])
   }
 
   // Set metrics
-  metricshub.init(enb.get(), args.general.metrics_period_secs);
-  metricshub.add_listener(&metrics_screen);
-  metrics_screen.set_handle(enb.get());
+//  metricshub.init(enb.get(), args.general.metrics_period_secs);
+//  metricshub.add_listener(&metrics_screen);
+//  metrics_screen.set_handle(enb.get());
+//
+//  // create input thread
+//  std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
 
-  srsenb::metrics_csv metrics_file(args.general.metrics_csv_filename);
-  if (args.general.metrics_csv_enable) {
-    metricshub.add_listener(&metrics_file);
-    metrics_file.set_handle(enb.get());
+  srsenb::metrics_http_scrape metrics_http;
+  if (args.general.http_scrape_enable) {
+	  metrics_http.init(enb.get(), args.general.http_scrape_port);
+	  metrics_http.set_handle(args.enb.enb_id);
   }
 
-  srsenb::metrics_json json_metrics(json_channel, enb.get());
-  if (args.general.report_json_enable) {
-    metricshub.add_listener(&json_metrics);
-  }
-
-  // create input thread
-  std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
 
   if (running) {
     if (args.gui.enable) {
@@ -682,8 +681,7 @@ int main(int argc, char* argv[])
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-  input.join();
-  metricshub.stop();
+//  input.join();
   enb->stop();
   cout << "---  exiting  ---" << endl;
 

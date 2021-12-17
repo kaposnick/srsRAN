@@ -1,43 +1,25 @@
 FROM ubuntu:focal
 
-RUN apt update && \
-	DEBIAN_FRONTEND=noninteractive apt install -y \ 
-	build-essential \
-	cmake \
-	libfftw3-dev \ 
-	libmbedtls-dev \ 
-	libboost-program-options-dev \ 
-	libconfig++-dev \
-	libsctp-dev \
-	libzmq3-dev \
-	curl \
-	iputils-ping \
-	iproute2 \
-	iptables \
-	unzip \
-	git
+RUN apt update \
+ && DEBIAN_FRONTEND=noninteractive apt install -y \
+        libfftw3-dev \
+        libmbedtls-dev \ 
+        libboost-program-options-dev \
+        libconfig++-dev \
+        libsctp-dev \ 
+        libzmq3-dev \
+		libmicrohttpd-dev \
+		curl \
+		iputils-ping \
+		iproute2 \
+		iptables
 
-WORKDIR /srsran
+COPY ./srsran /opt/srsran
+COPY ./srsran/share/srsran/enb.conf.example /root/.config/srsran/enb.conf
+COPY ./srsran/share/srsran/rb.conf.example /root/.config/srsran/rb.conf
+COPY ./srsran/share/srsran/rr.conf.example /root/.config/srsran/rr.conf
+COPY ./srsran/share/srsran/sib.conf.example /root/.config/srsran/sib.conf
+COPY ./srsran/share/srsran/ue.conf.example /root/.config/srsran/ue.conf 
 
-# Pinned git commit used for this example
-ARG COMMIT=5275f33360f1b3f1ee8d1c4d9ae951ac7c4ecd4e
-
-# Download and build
-RUN git clone https://github.com/srsRAN/srsRAN.git ./
-RUN git fetch origin ${COMMIT}
-RUN git checkout ${COMMIT}
-
-WORKDIR /srsran/build
-
-RUN cmake ../
-RUN make
-RUN make install
-
-WORKDIR /srsran
-
-	
-
-	
-	
- 
-
+ENV LD_LIBRARY_PATH /opt/srsran/lib:$LD_LIBRARY_PATH
+ENV PATH /opt/srsran/bin:$PATH
