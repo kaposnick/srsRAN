@@ -19,19 +19,42 @@
  *
  */
 
-#ifndef SRSRAN_RADIO_METRICS_H
-#define SRSRAN_RADIO_METRICS_H
+#ifndef SRSRAN_BUILD_INFO_H_IN
+#define SRSRAN_BUILD_INFO_H_IN
 
-namespace srsran {
+#include "srsran/config.h"
 
-typedef struct {
-  uint32_t rf_o;
-  uint32_t rf_u;
-  uint32_t rf_l;
-  bool     rf_error;
-  float    io_cpu_usage;
-} rf_metrics_t;
+# ifdef __cplusplus
+extern "C" {
+# endif
 
-} // namespace srsran
+#ifdef BUILD_TYPE_RELEASE
+  static char build_mode[] = "Release";
+#else
+  #ifdef BUILD_TYPE_DEBUG
+    static char build_mode[] = "Debug";
+  #else
+    #ifdef BUILD_TYPE_RELWITHDEBINFO
+      static char build_mode[] = "RelWithDebInfo";
+    #else
+      static char build_mode[] = "unknown";
+    #endif
+  #endif
+#endif
 
-#endif // SRSRAN_RADIO_METRICS_H
+// the configured build options for srsRAN
+static char build_info[] = "commit 5a8d06c89 on branch DOCKER";
+
+SRSRAN_API char* srsran_get_build_info() {
+  return build_info;
+};
+
+SRSRAN_API char* srsran_get_build_mode() {
+  return build_mode;
+}
+
+# ifdef __cplusplus
+}
+# endif
+
+#endif // BUILD_INFO_

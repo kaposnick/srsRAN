@@ -79,7 +79,13 @@ typedef struct {
                                     bool   blocking,
                                     bool   is_start_of_burst,
                                     bool   is_end_of_burst);
+  int (*srsran_rf_io_time_spent)(void* h, void* io_spent);
+  int (*srsran_rf_pause_metrics)(void* h);
 } rf_dev_t;
+
+int dummy_io_retrieval(void *h, void* io_spent) {
+	return 0;
+}
 
 /* Define implementation for UHD */
 #ifdef ENABLE_UHD
@@ -114,7 +120,8 @@ static rf_dev_t dev_uhd = {"UHD",
                            rf_uhd_recv_with_time,
                            rf_uhd_recv_with_time_multi,
                            rf_uhd_send_timed,
-                           .srsran_rf_send_timed_multi = rf_uhd_send_timed_multi};
+                           .srsran_rf_send_timed_multi = rf_uhd_send_timed_multi,
+						   .srsran_rf_io_time_spent = dummy_io_retrieval};
 #endif
 
 /* Define implementation for bladeRF */
@@ -150,7 +157,8 @@ static rf_dev_t dev_blade = {"bladeRF",
                              rf_blade_recv_with_time,
                              rf_blade_recv_with_time_multi,
                              rf_blade_send_timed,
-                             .srsran_rf_send_timed_multi = rf_blade_send_timed_multi};
+                             .srsran_rf_send_timed_multi = rf_blade_send_timed_multi,
+							 .srsran_rf_io_time_spent = dummy_io_retrieval};
 #endif
 
 #ifdef ENABLE_SOAPYSDR
@@ -185,7 +193,8 @@ static rf_dev_t dev_soapy = {"soapy",
                              rf_soapy_recv_with_time,
                              rf_soapy_recv_with_time_multi,
                              rf_soapy_send_timed,
-                             .srsran_rf_send_timed_multi = rf_soapy_send_timed_multi};
+                             .srsran_rf_send_timed_multi = rf_soapy_send_timed_multi,
+							 .srsran_rf_io_time_spent = dummy_io_retrieval};
 
 #endif
 
@@ -222,7 +231,9 @@ static rf_dev_t dev_zmq = {"zmq",
                            rf_zmq_recv_with_time,
                            rf_zmq_recv_with_time_multi,
                            rf_zmq_send_timed,
-                           .srsran_rf_send_timed_multi = rf_zmq_send_timed_multi};
+                           .srsran_rf_send_timed_multi = rf_zmq_send_timed_multi,
+						   .srsran_rf_io_time_spent = rf_zmq_io_time_spent,
+						   .srsran_rf_pause_metrics = rf_zmq_pause_metrics};
 #endif
 
 /* Define implementation for Sidekiq */
@@ -257,7 +268,8 @@ static rf_dev_t dev_skiq = {.name                             = "Sidekiq",
                             .srsran_rf_recv_with_time         = rf_skiq_recv_with_time,
                             .srsran_rf_recv_with_time_multi   = rf_skiq_recv_with_time_multi,
                             .srsran_rf_send_timed             = rf_skiq_send_timed,
-                            .srsran_rf_send_timed_multi       = rf_skiq_send_timed_multi};
+                            .srsran_rf_send_timed_multi       = rf_skiq_send_timed_multi,
+							.srsran_rf_io_time_spent = dummy_io_retrieval};
 #endif
 
 //#define ENABLE_DUMMY_DEV
@@ -273,7 +285,7 @@ void dummy_fnc() {}
 static rf_dev_t dev_dummy = {"dummy",   dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc,
                              dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc,
                              dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_rcv,
-                             dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc};
+                             dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, dummy_fnc, .srsran_rf_io_time_spent = dummy_io_retrieval};
 #endif
 
 static rf_dev_t* available_devices[] = {

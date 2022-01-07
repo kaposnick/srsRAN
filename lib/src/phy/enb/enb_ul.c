@@ -25,6 +25,7 @@
 #include <complex.h>
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 
 int srsran_enb_ul_init(srsran_enb_ul_t* q, cf_t* in_buffer, uint32_t max_prb)
 {
@@ -276,6 +277,5 @@ int srsran_enb_ul_get_pusch(srsran_enb_ul_t*    q,
                             srsran_pusch_res_t* res)
 {
   srsran_chest_ul_estimate_pusch(&q->chest, ul_sf, cfg, q->sf_symbols, &q->chest_res);
-
   return srsran_pusch_decode(&q->pusch, ul_sf, cfg, &q->chest_res, q->sf_symbols, res);
 }

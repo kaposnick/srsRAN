@@ -73,7 +73,7 @@ private:
   /// Calculates and returns the cpu usage in %. current_query is the most recent proc_stats_info, and
   /// delta_time_in_seconds is the elapsed time between the last measure and current in seconds. NOTE: Returns -1.0f on
   /// error.
-  float calculate_cpu_usage(const proc_stats_info& current_query, float delta_time_in_seconds) const;
+  float calculate_cpu_usage(const proc_stats_info& current_query, const long int current_cpu_uptime, float delta_time_in_seconds) const;
 
   /// Calculate the memory parameters and writes them in metrics.
   /// NOTE: on error, metrics memory parameters are set to 0.
@@ -89,6 +89,7 @@ private:
 private:
   srslog::basic_logger&                              logger;
   proc_stats_info                                    last_query                                 = {};
+  long int                                           last_cpu_rusage = 0;
   cpu_metrics_t                                      last_cpu_thread[metrics_max_supported_cpu] = {};
   std::chrono::time_point<std::chrono::steady_clock> last_query_time = std::chrono::steady_clock::now();
 };

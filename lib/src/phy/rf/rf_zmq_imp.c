@@ -19,6 +19,7 @@
  *
  */
 
+#define __USE_GNU
 #include "rf_zmq_imp.h"
 #include "rf_helper.h"
 #include "rf_zmq_imp_trx.h"
@@ -30,6 +31,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <zmq.h>
+#include <pthread.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 
 typedef struct {
   // Common attributes
@@ -72,6 +77,10 @@ void update_rates(rf_zmq_handler_t* handler, double srate);
  * Static Atributes
  */
 const char zmq_devname[4] = "zmq";
+
+pthread_mutex_t io_spent_mutex;
+long int io_spent = 0;
+__suseconds_t last_query_time = 0;
 
 /*
  * Static methods
@@ -635,6 +644,8 @@ int rf_zmq_recv_with_time(void* h, void* data, uint32_t nsamples, bool blocking,
 
 int rf_zmq_recv_with_time_multi(void* h, void** data, uint32_t nsamples, bool blocking, time_t* secs, double* frac_secs)
 {
+  struct rusage r_start, r_end;
+  getrusage(RUSAGE_THREAD, &r_start);
   int ret = SRSRAN_ERROR;
 
   if (h) {
@@ -823,7 +834,14 @@ int rf_zmq_recv_with_time_multi(void* h, void** data, uint32_t nsamples, bool bl
   ret = nsamples;
 
 clean_exit:
-
+  getrusage(RUSAGE_THREAD, &r_end);
+  pthread_mutex_lock(&io_spent_mutex);
+  long int before = 1e6 * (r_start.ru_utime.tv_sec + r_start.ru_stime.tv_sec) + r_start.ru_utime.tv_usec + r_start.ru_stime.tv_usec;
+  long int now = (1e6 * (r_end.ru_utime.tv_sec + r_end.ru_stime.tv_sec) + r_end.ru_utime.tv_usec + r_end.ru_stime.tv_usec);
+  if (now > before) {
+	  io_spent += (now - before);
+  }
+  pthread_mutex_unlock(&io_spent_mutex);
   return ret;
 }
 
@@ -854,6 +872,8 @@ int rf_zmq_send_timed_multi(void*  h,
                             bool   is_start_of_burst,
                             bool   is_end_of_burst)
 {
+  struct rusage r_start, r_end;
+  getrusage(RUSAGE_THREAD, &r_start);
   int ret = SRSRAN_ERROR;
 
   if (h && data && nsamples > 0) {
@@ -970,7 +990,9 @@ int rf_zmq_send_timed_multi(void*  h,
         // srsran_vec_sc_prod_cfc(buf, tx_gain, buf, nsamples_baseband);
 
         // Finally, transmit baseband
+
         int n = rf_zmq_tx_baseband(&handler->transmitter[i], buf, nsamples_baseband);
+
         if (n == SRSRAN_ERROR) {
           goto clean_exit;
         }
@@ -986,6 +1008,40 @@ int rf_zmq_send_timed_multi(void*  h,
   ret = SRSRAN_SUCCESS;
 
 clean_exit:
+  getrusage(RUSAGE_THREAD, &r_end);
 
+  pthread_mutex_lock(&io_spent_mutex);
+
+  long int before = 1e6 * (r_start.ru_utime.tv_sec + r_start.ru_stime.tv_sec) + r_start.ru_utime.tv_usec + r_start.ru_stime.tv_usec;
+  long int now = (1e6 * (r_end.ru_utime.tv_sec + r_end.ru_stime.tv_sec) + r_end.ru_utime.tv_usec + r_end.ru_stime.tv_usec);
+  if (now > before) {
+	io_spent += (now - before);
+  }
+  pthread_mutex_unlock(&io_spent_mutex);
   return ret;
+}
+
+int rf_zmq_io_time_spent(void* h, void* data) {
+	uint32_t cpu_count = sysconf(_SC_NPROCESSORS_CONF);
+
+	pthread_mutex_lock(&io_spent_mutex);
+	struct timeval current_timeval;
+	gettimeofday(&current_timeval, NULL);
+	__suseconds_t current_time = current_timeval.tv_sec * 1e6 + current_timeval.tv_usec;
+	if (last_query_time == 0) {
+		*( (float*) data) = 0.f;
+	} else {
+		__suseconds_t delta_in_us = (current_time - last_query_time);
+		*( (float*) data) = (io_spent) * 100.f / (cpu_count * delta_in_us) ;
+	}
+
+	last_query_time = current_time;
+	io_spent = 0;
+	pthread_mutex_unlock(&io_spent_mutex);
+
+	return SRSRAN_SUCCESS;
+}
+
+int rf_zmq_pause_metrics(void *h) {
+	return SRSRAN_SUCCESS;
 }

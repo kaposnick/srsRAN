@@ -45,6 +45,7 @@ public:
   virtual void stop()                                                  = 0;
 
   virtual bool get_metrics(rf_metrics_t* metrics) = 0;
+  virtual bool pause_metrics() = 0;
 };
 
 } // namespace srsran

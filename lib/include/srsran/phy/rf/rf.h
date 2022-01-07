@@ -172,6 +172,10 @@ SRSRAN_API int srsran_rf_send_multi(srsran_rf_t* rf,
                                     bool         is_start_of_burst,
                                     bool         is_end_of_burst);
 
+SRSRAN_API int srsran_rf_io_time_spent(srsran_rf_t* rf, void* data);
+
+SRSRAN_API int srsran_rf_pause_metrics(srsran_rf_t* rf);
+
 #ifdef __cplusplus
 }
 #endif

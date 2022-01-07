@@ -210,6 +210,8 @@ bool enb::get_metrics(enb_metrics_t* m)
   if (!started) {
     return false;
   }
+  radio->pause_metrics();
+  m->sys     = sys_proc.get_metrics();
   radio->get_metrics(&m->rf);
   phy->get_metrics(m->phy);
   if (eutra_stack) {
@@ -219,7 +221,7 @@ bool enb::get_metrics(enb_metrics_t* m)
     nr_stack->get_metrics(&m->nr_stack);
   }
   m->running = true;
-  m->sys     = sys_proc.get_metrics();
+  m->sys.current_io_usage = m->rf.io_cpu_usage;
   return true;
 }
 

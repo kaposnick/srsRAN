@@ -1,0 +1,6 @@
+build/
+srsran_config.json
+.settings/
+.cproject
+Docker/
+

@@ -3,9 +3,10 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
     - targets:
-      - cadvisor:8081
+      - cadvisor:8080
 - job_name: srsenb
   scrape_interval: 5s
+  # scrape_timeout: 10s
   static_configs:
     - targets:
-      - srsenb:8080
+      - 192.0.2.3:8080

@@ -90,6 +90,7 @@ public:
 
   // Other functions
   bool get_metrics(rf_metrics_t* metrics) final;
+  bool pause_metrics() final;
 
   void        handle_rf_msg(srsran_rf_error_t error);
   static void rf_msg_callback(void* arg, srsran_rf_error_t error);

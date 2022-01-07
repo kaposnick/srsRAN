@@ -392,3 +392,12 @@ int srsran_rf_send_timed2(srsran_rf_t* rf,
 {
   return srsran_rf_send_timed3(rf, data, nsamples, secs, frac_secs, true, true, is_start_of_burst, is_end_of_burst);
 }
+
+int srsran_rf_io_time_spent(srsran_rf_t* rf, void* data) {
+	return ((rf_dev_t*)rf->dev)->srsran_rf_io_time_spent(rf->handler, data);
+}
+
+int srsran_rf_pause_metrics(srsran_rf_t* rf) {
+	return ((rf_dev_t*)rf->dev)->srsran_rf_pause_metrics(rf->handler);
+}
+

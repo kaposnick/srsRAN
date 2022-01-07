@@ -24,11 +24,15 @@
 #include <sstream>
 #include <sys/sysinfo.h>
 #include <unistd.h>
+#include <sys/times.h>
+#include <sys/resource.h>
+#include <iostream>
 
 using namespace srsran;
 
 static const uint32_t cpu_count        = ::sysconf(_SC_NPROCESSORS_CONF);
 static const float    ticks_per_second = ::sysconf(_SC_CLK_TCK);
+static const float    us_per_second    = 1e6;
 
 sys_metrics_processor::sys_metrics_processor(srslog::basic_logger& logger) : logger(logger)
 {
@@ -94,17 +98,24 @@ sys_metrics_t sys_metrics_processor::get_metrics()
 
   // Get the stats from the proc.
   proc_stats_info current_query;
+
+  struct rusage process_usage;
+  getrusage(RUSAGE_SELF, &process_usage);
+  long int __current_cpu_usage = 1e6 * (process_usage.ru_utime.tv_sec + process_usage.ru_stime.tv_sec) + (process_usage.ru_utime.tv_usec + process_usage.ru_stime.tv_usec);
+
+
   metrics.thread_count      = current_query.num_threads;
-  metrics.process_cpu_usage = calculate_cpu_usage(current_query, measure_interval_ms / 1000.f);
+  metrics.current_cpu_usage = calculate_cpu_usage(current_query, __current_cpu_usage, measure_interval_ms / 1000.f);
 
   // Update the last values.
   last_query_time = current_time;
   last_query      = std::move(current_query);
-
+  last_cpu_rusage = __current_cpu_usage;
   return metrics;
 }
 
 float sys_metrics_processor::calculate_cpu_usage(const proc_stats_info& current_query,
+												 const long int         current_cpu_usage,
                                                  float                  delta_time_in_seconds) const
 {
   // Error current value has to be greater than last value.
@@ -117,8 +128,10 @@ float sys_metrics_processor::calculate_cpu_usage(const proc_stats_info& current_
     return 0.f;
   }
 
-  return ((current_query.stime + current_query.utime) - (last_query.stime + last_query.utime)) * 100.f /
-         (cpu_count * ticks_per_second * delta_time_in_seconds);
+  return ((current_cpu_usage - last_cpu_rusage) / us_per_second) * 100.f / (cpu_count * delta_time_in_seconds);
+
+//  return ((current_query.stime + current_query.utime) - (last_query.stime + last_query.utime)) * 100.f /
+//         (cpu_count * ticks_per_second * delta_time_in_seconds);
 }
 
 sys_metrics_processor::cpu_metrics_t sys_metrics_processor::read_cpu_idle_from_line(const std::string& line) const

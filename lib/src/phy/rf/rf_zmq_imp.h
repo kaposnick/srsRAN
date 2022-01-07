@@ -104,4 +104,8 @@ SRSRAN_API int rf_zmq_send_timed_multi(void*  h,
                                        bool   is_start_of_burst,
                                        bool   is_end_of_burst);
 
+SRSRAN_API int rf_zmq_io_time_spent(void* h, void* __io_spent);
+
+SRSRAN_API int rf_zmq_pause_metrics(void *h);
+
 #endif /* SRSRAN_RF_ZMQ_IMP_H_ */

@@ -39,6 +39,8 @@ struct sys_metrics_t {
   float                                        system_mem            = 0.f;
   uint32_t                                     cpu_count             = 0;
   std::array<float, metrics_max_supported_cpu> cpu_load;
+  float                                    	   current_cpu_usage = 0.f; // cumulative
+  float                                        current_io_usage = 0.f;  // cumulative
 };
 
 } // namespace srsran

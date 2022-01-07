@@ -992,8 +992,24 @@ srsran_rf_info_t* radio::get_info()
 bool radio::get_metrics(rf_metrics_t* metrics)
 {
   std::lock_guard<std::mutex> lock(metrics_mutex);
+  float io_spent = 0;
+  for (srsran_rf_t& rf_device : rf_devices) {
+	  float data = 0;
+	  srsran_rf_io_time_spent(&rf_device, (void *) &data);
+	  io_spent += data;
+  }
+  rf_metrics.io_cpu_usage = io_spent;
   *metrics   = rf_metrics;
   rf_metrics = {};
+  return true;
+}
+
+bool radio::pause_metrics() {
+  std::lock_guard<std::mutex> lock(metrics_mutex);
+  for (srsran_rf_t& rf_device: rf_devices) {
+	  srsran_rf_pause_metrics(&rf_device);
+  }
+
   return true;
 }
 

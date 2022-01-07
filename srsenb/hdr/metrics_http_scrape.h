@@ -30,7 +30,7 @@ public:
     void stop();
 
     std::string& getEnbId();
-    const srsenb::enb_metrics_t & getLatestMetrics();
+    srsenb::enb_metrics_t & getLatestMetrics();
 
 private:
     enb_metrics_interface* m = nullptr;
