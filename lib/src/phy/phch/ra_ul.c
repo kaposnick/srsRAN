@@ -321,11 +321,12 @@ uint32_t srsran_ra_ul_info(const srsran_pusch_grant_t* grant, char* info_str, ui
   return srsran_print_check(info_str,
                             len,
                             0,
-                            ", rb=(%d,%d), nof_re=%d, tbs=%d, mod=%d, rv=%d",
+                            ", rb=(%d,%d), nof_re=%d, tbs=%d, mod=%d, mcs_idx=%d, rv=%d",
                             grant->n_prb_tilde[0],
                             grant->n_prb_tilde[0] + grant->L_prb - 1,
                             grant->nof_re,
                             grant->tb.tbs / 8,
                             srsran_mod_bits_x_symbol(grant->tb.mod),
+							grant->tb.mcs_idx,
                             grant->tb.rv);
 }

@@ -625,7 +625,8 @@ void ue::metrics_read(mac_ue_metrics_t* metrics_)
 
   phr_counter    = 0;
   dl_cqi_counter = 0;
-  ue_metrics     = {};
+//  ue_metrics     = {};
+  bzero(&ue_metrics, sizeof(ue_metrics));
 }
 
 void ue::metrics_phr(float phr)

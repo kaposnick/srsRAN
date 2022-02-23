@@ -578,7 +578,7 @@ int main(int argc, char* argv[])
   add_emergency_cleanup_handler(emergency_cleanup_handler, nullptr);
 
   all_args_t                         args = {};
-//  srsran::metrics_hub<enb_metrics_t> metricshub;
+  srsran::metrics_hub<enb_metrics_t> metricshub;
 //  metrics_stdout                     metrics_screen;
 
   cout << "---  Software Radio Systems LTE eNodeB  ---" << endl << endl;
@@ -640,12 +640,23 @@ int main(int argc, char* argv[])
   }
 
   // Set metrics
-//  metricshub.init(enb.get(), args.general.metrics_period_secs);
+  metricshub.init(enb.get(), args.general.metrics_period_secs);
 //  metricshub.add_listener(&metrics_screen);
 //  metrics_screen.set_handle(enb.get());
 //
 //  // create input thread
 //  std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
+
+  srsenb::metrics_csv metrics_file(args.general.metrics_csv_filename);
+  if (args.general.metrics_csv_enable) {
+      metricshub.add_listener(&metrics_file);
+      metrics_file.set_handle(enb.get());
+  }
+
+  srsenb::metrics_json json_metrics(json_channel, enb.get());
+  if (args.general.report_json_enable) {
+      metricshub.add_listener(&json_metrics);
+  }
 
   srsenb::metrics_http_scrape metrics_http;
   if (args.general.http_scrape_enable) {

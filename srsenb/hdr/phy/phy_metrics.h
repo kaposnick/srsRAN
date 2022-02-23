@@ -32,6 +32,8 @@ struct ul_metrics_t {
   float pucch_sinr;
   float rssi;
   float turbo_iters;
+  float dec_rt;
+  float dec_cpu;
   float mcs;
   int   n_samples;
   int   n_samples_pucch;
@@ -43,6 +45,7 @@ struct dl_metrics_t {
 };
 
 struct phy_metrics_t {
+  uint32_t rnti;
   dl_metrics_t dl;
   ul_metrics_t ul;
 };

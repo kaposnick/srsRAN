@@ -78,6 +78,7 @@ typedef struct SRSRAN_API {
 
   bool     meas_time_en;
   uint32_t meas_time_value;
+  uint32_t meas_cpu_time_value;
 
   bool meas_epre_en;
   bool meas_ta_en;

@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <unistd.h>
+#include <sys/resource.h>
 
 #include "srsran/phy/ch_estimation/refsignal_ul.h"
 #include "srsran/phy/common/phy_common.h"
@@ -353,6 +355,22 @@ int srsran_pusch_encode(srsran_pusch_t*      q,
   return ret;
 }
 
+void get_cpu_time_interval(struct rusage* tdata) {
+  tdata[0].ru_utime.tv_sec = tdata[2].ru_utime.tv_sec - tdata[1].ru_utime.tv_sec;
+  tdata[0].ru_utime.tv_usec = tdata[2].ru_utime.tv_usec - tdata[1].ru_utime.tv_usec;
+  if (tdata[0].ru_utime.tv_usec < 0) {
+	  tdata[0].ru_utime.tv_sec--;
+	  tdata[0].ru_utime.tv_usec += 1000000;
+  }
+
+  tdata[0].ru_stime.tv_sec = tdata[2].ru_stime.tv_sec - tdata[1].ru_stime.tv_sec;
+  tdata[0].ru_stime.tv_usec = tdata[2].ru_stime.tv_usec - tdata[1].ru_stime.tv_usec;
+  if (tdata[0].ru_stime.tv_usec < 0) {
+  	  tdata[0].ru_stime.tv_sec--;
+  	  tdata[0].ru_stime.tv_usec += 1000000;
+  }
+}
+
 /** Decodes the PUSCH from the received symbols
  */
 int srsran_pusch_decode(srsran_pusch_t*        q,
@@ -367,9 +385,12 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
 
   if (q != NULL && sf_symbols != NULL && out != NULL && cfg != NULL) {
     struct timeval t[3];
+    struct rusage  rusage[3];
     if (cfg->meas_time_en) {
       gettimeofday(&t[1], NULL);
+      getrusage(RUSAGE_THREAD, &rusage[1]);
     }
+//	usleep(20000);
 
     /* Limit UL modulation if not supported by the UE or disabled by higher layers */
     if (!cfg->enable_64qam) {
@@ -461,9 +482,17 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
     ret             = SRSRAN_SUCCESS;
 
     if (cfg->meas_time_en) {
+	  getrusage(RUSAGE_THREAD, &rusage[2]);
       gettimeofday(&t[2], NULL);
       get_time_interval(t);
-      cfg->meas_time_value = t[0].tv_usec;
+      get_cpu_time_interval(rusage);
+	  cfg->meas_cpu_time_value = (rusage[0].ru_utime.tv_usec + rusage[0].ru_stime.tv_usec) + 1e6 * (rusage[0].ru_utime.tv_sec + rusage[0].ru_stime.tv_sec);
+      cfg->meas_time_value = t[0].tv_usec + 1e6 * t[0].tv_sec;
+
+      out->decode_realtime = cfg->meas_time_value;
+      out->decode_cputime  = cfg->meas_cpu_time_value;
+
+	  out->crc = (out->decode_realtime > 3000) ? out->crc: false;
     }
   }
 
@@ -536,6 +565,7 @@ uint32_t srsran_pusch_rx_info(srsran_pusch_cfg_t*    cfg,
 
   if (cfg->meas_time_en) {
     len = srsran_print_check(str, str_len, len, ", t=%d us", cfg->meas_time_value);
+    len = srsran_print_check(str, str_len, len, ", cpu_t=%d us", cfg->meas_cpu_time_value);
   }
   return len;
 }

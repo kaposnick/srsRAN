@@ -30,6 +30,7 @@
 #ifndef SRSRAN_PUSCH_H
 #define SRSRAN_PUSCH_H
 
+
 #include "srsran/config.h"
 #include "srsran/phy/ch_estimation/refsignal_ul.h"
 #include "srsran/phy/common/phy_common.h"
@@ -44,6 +45,8 @@
 #include "srsran/phy/phch/regs.h"
 #include "srsran/phy/phch/sch.h"
 #include "srsran/phy/scrambling/scrambling.h"
+
+#include <sys/types.h>
 
 /* PUSCH object */
 typedef struct SRSRAN_API {
@@ -85,6 +88,8 @@ typedef struct SRSRAN_API {
   srsran_uci_value_t uci;
   bool               crc;
   float              avg_iterations_block;
+  uint32_t			 decode_realtime; // in us
+  uint32_t			 decode_cputime;  // in us
   float              evm;
   float              epre_dbfs;
 } srsran_pusch_res_t;

@@ -257,6 +257,17 @@ thread_pool::worker* thread_pool::get_worker(uint32_t id)
   return NULL;
 }
 
+uint32_t thread_pool::get_nof_run_workers() {
+	uint32_t sum = 0;
+	for (uint32_t i = 0; i < nof_workers; i++) {
+		if (status[i] == START_WORK) {
+			sum += 1;
+		}
+	}
+
+	return sum;
+}
+
 uint32_t thread_pool::get_nof_workers()
 {
   return nof_workers;

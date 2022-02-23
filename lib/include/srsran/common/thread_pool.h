@@ -83,6 +83,7 @@ public:
   void        start_worker(uint32_t id);
   worker*     get_worker(uint32_t id);
   uint32_t    get_nof_workers();
+  uint32_t	  get_nof_run_workers();
   std::string get_id();
 
 private:

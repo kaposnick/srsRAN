@@ -23,6 +23,8 @@
 #include "srsran/srsran.h"
 
 #include "srsenb/hdr/phy/lte/cc_worker.h"
+#include "sys/time.h"
+#include "sys/resource.h"
 
 #define Error(fmt, ...)                                                                                                \
   if (SRSRAN_DEBUG_ENABLED)                                                                                            \
@@ -351,7 +353,7 @@ bool cc_worker::decode_pusch_rnti(stack_interface_phy_lte::ul_sched_grant_t& ul_
   // Save statistics only if data was provided
   if (ul_grant.data != nullptr) {
     // Save metrics stats
-    ue_db[rnti]->metrics_ul(ul_grant.dci.tb.mcs_idx, 0, enb_ul.chest_res.snr_db, pusch_res.avg_iterations_block);
+    ue_db[rnti]->metrics_ul(ul_grant.dci.tb.mcs_idx, 0, enb_ul.chest_res.snr_db, pusch_res.avg_iterations_block, pusch_res.decode_realtime, pusch_res.decode_cputime);
   }
   return true;
 }
@@ -642,8 +644,9 @@ void cc_worker::ue::metrics_read(phy_metrics_t* metrics_)
 {
   if (metrics_) {
     *metrics_ = metrics;
+    metrics_->rnti = get_rnti();
   }
-  bzero(&metrics, sizeof(phy_metrics_t));
+  metrics = {};
 }
 
 void cc_worker::ue::metrics_dl(uint32_t mcs)
@@ -652,12 +655,14 @@ void cc_worker::ue::metrics_dl(uint32_t mcs)
   metrics.dl.n_samples++;
 }
 
-void cc_worker::ue::metrics_ul(uint32_t mcs, float rssi, float sinr, float turbo_iters)
+void cc_worker::ue::metrics_ul(uint32_t mcs, float rssi, float sinr, float turbo_iters, uint32_t dec_rt, uint32_t dec_cpu)
 {
   metrics.ul.mcs         = SRSRAN_VEC_CMA((float)mcs, metrics.ul.mcs, metrics.ul.n_samples);
   metrics.ul.pusch_sinr  = SRSRAN_VEC_CMA((float)sinr, metrics.ul.pusch_sinr, metrics.ul.n_samples);
   metrics.ul.rssi        = SRSRAN_VEC_CMA((float)rssi, metrics.ul.rssi, metrics.ul.n_samples);
   metrics.ul.turbo_iters = SRSRAN_VEC_CMA((float)turbo_iters, metrics.ul.turbo_iters, metrics.ul.n_samples);
+  metrics.ul.dec_rt      = SRSRAN_VEC_CMA((uint32_t)dec_rt, metrics.ul.dec_rt, metrics.ul.n_samples);
+  metrics.ul.dec_cpu      = SRSRAN_VEC_CMA((uint32_t)dec_cpu, metrics.ul.dec_cpu, metrics.ul.n_samples);
   metrics.ul.n_samples++;
 }
 

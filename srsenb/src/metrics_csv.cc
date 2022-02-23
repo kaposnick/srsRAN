@@ -60,66 +60,100 @@ void metrics_csv::stop()
   }
 }
 
+//static double current_get_timestamp() {
+//	auto tp = std::chrono::system_clock::now().time_since_epoch();
+//	return std::chrono::duration_cast<std::chrono::milliseconds>(tp).count() * 1e-3;
+//}
+
+static bool has_valid_metric_ranges(const enb_metrics_t& m, unsigned index)
+{
+  if (index >= m.phy.size()) {
+    return false;
+  }
+  if (index >= m.stack.mac.ues.size()) {
+    return false;
+  }
+  if (index >= m.stack.rlc.ues.size()) {
+    return false;
+  }
+  if (index >= m.stack.pdcp.ues.size()) {
+    return false;
+  }
+
+  return true;
+}
+
+void metrics_csv::append_phy_metr(const phy_metrics_t& phy) {
+	file << phy.rnti << "|";
+	file << phy.ul.pusch_sinr << "|";
+	file << phy.ul.pucch_sinr << "|";
+	file << phy.ul.rssi << "|";
+	file << phy.ul.turbo_iters << "|";
+	file << phy.ul.dec_rt << "|";
+	file << phy.ul.dec_cpu << "|";
+	file << phy.ul.mcs << "|";
+	file << phy.ul.n_samples << "|";
+	file << phy.ul.n_samples_pucch << "|";
+	file << phy.ul.n_samples << "|";
+	file << phy.dl.mcs << "|";
+	file << phy.dl.n_samples << "|";
+}
+
+void metrics_csv::append_mac_metr(const mac_ue_metrics_t& mac) {
+	file << mac.nof_tti << "|";
+	file << mac.dl_cqi << "|";
+	file << mac.tx_brate << "|";
+	file << mac.tx_pkts << "|";
+	file << mac.tx_errors << "|";
+	file << mac.dl_buffer << "|";
+	file << mac.rx_brate << "|";
+	file << mac.rx_pkts << "|";
+	file << mac.rx_errors << "|";
+	file << mac.ul_buffer << "|";
+	file << mac.phr ;
+}
+
 void metrics_csv::set_metrics(const enb_metrics_t& metrics, const uint32_t period_usec)
 {
   if (file.is_open() && enb != NULL) {
     if (n_reports == 0) {
-      file << "time;nof_ue;dl_brate;ul_brate;"
-              "proc_rmem;proc_rmem_kB;proc_vmem_kB;sys_mem;system_load;thread_count";
-
-      // Add the cpus
-      for (uint32_t i = 0, e = metrics.sys.cpu_count; i != e; ++i) {
-        file << ";cpu_" << std::to_string(i);
-      }
-
-      // Add the new line.
+      file << "report|period|cpu_usage|pci";
+      file << "|rnti|pusch_sinr|pucch_sinr|rssi|turbo_iters|dec_rt|dec_cpu|ul_mcs|ul_nsamples_pusch|ul_nsamples_pucch|ul_nsamples|dl_mcs|dl_nsamples_pdsch";
+      file << "|ttis|dl_cqi|dl_bits|dl_pkts|dl_errors|dl_pend_bytes|ul_bits|ul_pkts|ul_errors|ul_pend_bytes|ul_phr";
       file << "\n";
     }
 
-    // Time
-    file << (metrics_report_period * n_reports) << ";";
+    if (metrics.stack.rrc.ues.size() > 0) {
+		uint16_t num_ccs = metrics.stack.mac.cc_info.size();
+    	for (unsigned cc_idx = 0; cc_idx != num_ccs; ++cc_idx) {
+    		for (unsigned i = 0; i != metrics.stack.rrc.ues.size(); i++) {
+    	    		if (!has_valid_metric_ranges(metrics, i)) {
+    	    			continue;
+    	    		}
 
-    // UEs
-    file << (metrics.stack.rrc.ues.size()) << ";";
+    	    		if (metrics.stack.mac.ues[i].cc_idx != cc_idx) {
+    	    			continue;
+    	    		}
 
-    // Sum up rates for all UEs
-    float dl_rate_sum = 0.0, ul_rate_sum = 0.0;
-    for (size_t i = 0; i < metrics.stack.rrc.ues.size(); i++) {
-      dl_rate_sum += metrics.stack.mac.ues[i].tx_brate / (metrics.stack.mac.ues[i].nof_tti * 1e-3);
-      ul_rate_sum += metrics.stack.mac.ues[i].rx_brate / (metrics.stack.mac.ues[i].nof_tti * 1e-3);
+    	    		for(auto it = metrics.phy.begin(); it != metrics.phy.end(); ++it) {
+    	    			auto& phy_metr = *it;
+    	    			if (phy_metr.rnti == metrics.stack.mac.ues[i].rnti) {
+    	    				file << n_reports << "|";
+    	    				file << (period_usec * 1e-3) << "|";
+    	    				file << metrics.sys.current_cpu_usage << "|";
+    	        	    	file << metrics.stack.mac.cc_info[cc_idx].pci << "|";
+    	    				append_phy_metr(phy_metr);
+    	    				append_mac_metr(metrics.stack.mac.ues[i]);
+							file << "\n";
+							file.flush();
+    	    				break;
+    	    			}
+    	    		}
+    	    	}
+    	    }
     }
-
-    // DL rate
-    if (dl_rate_sum > 0) {
-      file << float_to_string(SRSRAN_MAX(0.1, (float)dl_rate_sum), 2);
-    } else {
-      file << float_to_string(0, 2);
-    }
-
-    // UL rate
-    if (ul_rate_sum > 0) {
-      file << float_to_string(SRSRAN_MAX(0.1, (float)ul_rate_sum), 2);
-    } else {
-      file << float_to_string(0, 2);
-    }
-
-    // Write system metrics.
-    const srsran::sys_metrics_t& m = metrics.sys;
-    file << float_to_string(m.process_realmem, 2);
-    file << std::to_string(m.process_realmem_kB) << ";";
-    file << std::to_string(m.process_virtualmem_kB) << ";";
-    file << float_to_string(m.system_mem, 2);
-    file << float_to_string(m.process_cpu_usage, 2);
-    file << std::to_string(m.thread_count) << ";";
-
-    // Write the cpu metrics.
-    for (uint32_t i = 0, e = m.cpu_count, last_cpu_index = e - 1; i != e; ++i) {
-      file << float_to_string(m.cpu_load[i], 2, (i != last_cpu_index));
-    }
-
-    file << "\n";
-
     n_reports++;
+
   } else {
     std::cout << "Error, couldn't write CSV file." << std::endl;
   }
@@ -134,5 +168,7 @@ std::string metrics_csv::float_to_string(float f, int digits, bool add_semicolon
     os << ';';
   return os.str();
 }
+
+
 
 } // namespace srsenb

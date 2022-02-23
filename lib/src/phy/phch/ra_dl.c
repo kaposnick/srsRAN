@@ -694,6 +694,9 @@ static uint32_t print_multi(char* info_str, uint32_t n, uint32_t len, srsran_pds
         case 2:
           n = srsran_print_check(info_str, len, n, "%d", srsran_mod_bits_x_symbol(grant->tb[i].mod));
           break;
+        case 3:
+          n = srsran_print_check(info_str, len, n, "%d", grant->tb[i].mcs_idx);
+          break;
       }
       if (i < SRSRAN_MAX_CODEWORDS - 1) {
         if (grant->tb[i + 1].enabled) {
@@ -719,6 +722,9 @@ uint32_t srsran_ra_dl_info(srsran_pdsch_grant_t* grant, char* info_str, uint32_t
   n = srsran_print_check(info_str, len, n, "}");
   n = srsran_print_check(info_str, len, n, ", rv={");
   n = print_multi(info_str, n, len, grant, 0);
+  n = srsran_print_check(info_str, len, n, "}");
+  n = srsran_print_check(info_str, len, n, ", mcs_idx={");
+  n = print_multi(info_str, n, len, grant, 3);
   n = srsran_print_check(info_str, len, n, "}");
 
   if (grant->tx_scheme != SRSRAN_TXSCHEME_PORT0) {

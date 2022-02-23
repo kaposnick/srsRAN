@@ -50,6 +50,8 @@ public:
 
 private:
   std::string float_to_string(float f, int digits, bool add_semicolon = true);
+  void append_phy_metr(const phy_metrics_t& phy);
+  void append_mac_metr(const mac_ue_metrics_t& mac);
 
   float                  metrics_report_period;
   std::ofstream          file;
