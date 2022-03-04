@@ -194,7 +194,7 @@ public:
    * @param crc_res the CRC check, set to true if the message was decoded succesfully
    * @return SRSRAN_SUCCESS if no error occurs, SRSRAN_ERROR* if an error occurs
    */
-  virtual int crc_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, uint32_t nof_bytes, bool crc_res) = 0;
+  virtual int crc_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, uint32_t nof_bytes, bool crc_res, uint32_t ul_nof_prbs, bool orig_crc) = 0;
 
   /**
    * Pushes an uplink PDU through the stack if crc_res==true or discards it if crc_res==false

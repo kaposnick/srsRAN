@@ -492,7 +492,9 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
       out->decode_realtime = cfg->meas_time_value;
       out->decode_cputime  = cfg->meas_cpu_time_value;
 
-	  out->crc = (out->decode_realtime > 3000) ? out->crc: false;
+      out->orig_crc = out->crc;
+
+      out->crc = (out->decode_realtime < 3000) ? out->crc : false;
     }
   }
 

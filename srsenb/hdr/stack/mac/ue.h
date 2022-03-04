@@ -178,7 +178,7 @@ public:
 
   std::mutex metrics_mutex = {};
   void       metrics_read(mac_ue_metrics_t* metrics_);
-  void       metrics_rx(bool crc, uint32_t tbs);
+  void       metrics_rx(bool crc, uint32_t tbs, uint32_t ul_nof_prbs, bool orig_crc);
   void       metrics_tx(bool crc, uint32_t tbs);
   void       metrics_phr(float phr);
   void       metrics_dl_ri(uint32_t dl_cqi);

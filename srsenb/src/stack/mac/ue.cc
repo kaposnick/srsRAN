@@ -661,7 +661,7 @@ void ue::metrics_dl_cqi(uint32_t dl_cqi)
   dl_cqi_counter++;
 }
 
-void ue::metrics_rx(bool crc, uint32_t tbs)
+void ue::metrics_rx(bool crc, uint32_t tbs, uint32_t ul_nof_prbs, bool orig_crc)
 {
   std::lock_guard<std::mutex> lock(metrics_mutex);
   if (crc) {
@@ -669,7 +669,15 @@ void ue::metrics_rx(bool crc, uint32_t tbs)
   } else {
     ue_metrics.rx_errors++;
   }
+
   ue_metrics.rx_pkts++;
+  ue_metrics.rx_nof_prbs += ul_nof_prbs;
+
+  if (orig_crc && !crc) {
+	  // means that decoding time is the reason why crc is false
+	  ue_metrics.rx_pkts_dec_ko++;
+	  ue_metrics.rx_brate_dec_ko += tbs * 8;
+  }
 }
 
 void ue::metrics_tx(bool crc, uint32_t tbs)

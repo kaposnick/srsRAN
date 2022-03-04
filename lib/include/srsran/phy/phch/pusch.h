@@ -87,6 +87,7 @@ typedef struct SRSRAN_API {
   uint8_t*           data;
   srsran_uci_value_t uci;
   bool               crc;
+  bool				 orig_crc;
   float              avg_iterations_block;
   uint32_t			 decode_realtime; // in us
   uint32_t			 decode_cputime;  // in us

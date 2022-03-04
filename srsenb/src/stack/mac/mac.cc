@@ -298,7 +298,7 @@ int mac::ack_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, uint32_t 
   return SRSRAN_SUCCESS;
 }
 
-int mac::crc_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, uint32_t nof_bytes, bool crc)
+int mac::crc_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, uint32_t nof_bytes, bool crc, uint32_t ul_nof_prbs, bool orig_crc)
 {
   logger.set_context(tti_rx);
   srsran::rwlock_read_guard lock(rwlock);
@@ -308,7 +308,7 @@ int mac::crc_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, uint32_t 
   }
 
   ue_db[rnti]->set_tti(tti_rx);
-  ue_db[rnti]->metrics_rx(crc, nof_bytes);
+  ue_db[rnti]->metrics_rx(crc, nof_bytes, ul_nof_prbs, orig_crc);
 
   rrc_h->set_radiolink_ul_state(rnti, crc);
 

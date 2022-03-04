@@ -36,8 +36,11 @@ struct mac_ue_metrics_t {
   int      tx_errors;
   int      tx_brate;
   int      rx_pkts;
+  uint32_t rx_nof_prbs;
   int      rx_errors;
   int      rx_brate;
+  int 	   rx_pkts_dec_ko; // packets OK-CRC but considered KO due to long decoding
+  int	   rx_brate_dec_ko;
   int      ul_buffer;
   int      dl_buffer;
   float    dl_cqi;

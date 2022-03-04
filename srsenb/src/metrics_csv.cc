@@ -109,6 +109,9 @@ void metrics_csv::append_mac_metr(const mac_ue_metrics_t& mac) {
 	file << mac.rx_brate << "|";
 	file << mac.rx_pkts << "|";
 	file << mac.rx_errors << "|";
+	file << mac.rx_nof_prbs << "|";
+	file << mac.rx_pkts_dec_ko << "|";
+	file << mac.rx_brate_dec_ko << "|";
 	file << mac.ul_buffer << "|";
 	file << mac.phr ;
 }
@@ -119,7 +122,7 @@ void metrics_csv::set_metrics(const enb_metrics_t& metrics, const uint32_t perio
     if (n_reports == 0) {
       file << "report|period|cpu_usage|pci";
       file << "|rnti|pusch_sinr|pucch_sinr|rssi|turbo_iters|dec_rt|dec_cpu|ul_mcs|ul_nsamples_pusch|ul_nsamples_pucch|ul_nsamples|dl_mcs|dl_nsamples_pdsch";
-      file << "|ttis|dl_cqi|dl_bits|dl_pkts|dl_errors|dl_pend_bytes|ul_bits|ul_pkts|ul_errors|ul_pend_bytes|ul_phr";
+      file << "|ttis|dl_cqi|dl_bits|dl_pkts|dl_errors|dl_pend_bytes|ul_bits|ul_pkts|ul_errors|ul_nof_prbs|ul_pkts_crc_ok_dec_ko|ul_bits_crc_ok_dec_ko|ul_pend_bytes|ul_phr";
       file << "\n";
     }
 

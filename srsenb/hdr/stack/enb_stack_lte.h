@@ -91,9 +91,9 @@ public:
   {
     return mac.ack_info(tti, rnti, enb_cc_idx, tb_idx, ack);
   }
-  int crc_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t nof_bytes, bool crc_res) final
+  int crc_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t nof_bytes, bool crc_res, uint32_t ul_nof_prbs, bool orig_crc) final
   {
-    return mac.crc_info(tti, rnti, enb_cc_idx, nof_bytes, crc_res);
+    return mac.crc_info(tti, rnti, enb_cc_idx, nof_bytes, crc_res, ul_nof_prbs, orig_crc);
   }
   int push_pdu(uint32_t tti,
                uint16_t rnti,

@@ -505,7 +505,7 @@ public:
     notify_ack_info();
     return 0;
   }
-  int crc_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, uint32_t nof_bytes, bool crc_res) override
+  int crc_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, uint32_t nof_bytes, bool crc_res, uint32_t ul_nof_probs, bool orig_crc) override
   {
     std::lock_guard<std::mutex> lock(phy_mac_mutex);
 
