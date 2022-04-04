@@ -11,11 +11,13 @@
     --enb_files.sib_config /home/naposto/.config/srsran/sib.conf \
     --enb_files.rr_config /home/naposto/.config/srsran/rr.conf \
     --enb_files.rb_config /home/naposto/.config/srsran/rb.conf \
-    --expert.metrics_csv_enable=true \
-    --expert.metrics_period_secs=1.0 \
+    --log.phy_level=info \
+    --log.mac_level=debug \
     --rf.device_name=zmq \
     --rf.device_args="fail_on_disconnect=true,tx_port=tcp://*:2001,rx_port=tcp://localhost:2000,id=enb,base_srate=23.04e6" 
 
+## //    --expert.metrics_csv_enable=true \
+##    --expert.metrics_period_secs=1.0 \
 ##    --scheduler.pdsch_mcs=25 \
 ##    --scheduler.pusch_mcs=25 \
 ##    --expert.metrics_http_scrape_enable=true \
