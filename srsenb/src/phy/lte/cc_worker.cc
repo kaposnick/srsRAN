@@ -382,10 +382,10 @@ void cc_worker::decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, 
       phy->stack->push_pdu(
           tti_rx, rnti, cc_idx, ul_cfg.pusch.grant.tb.tbs / 8, pusch_res.crc, ul_cfg.pusch.grant.L_prb);
       // Logging
-      if (logger.info.enabled()) {
+      if (logger.warning.enabled()) {
         char str[512];
         srsran_pusch_rx_info(&ul_cfg.pusch, &pusch_res, &enb_ul.chest_res, str, sizeof(str));
-        logger.info("PUSCH: cc=%d, %s", cc_idx, str);
+        logger.warning("PUSCH: cc=%d, %s", cc_idx, str);
       }
     }
   }
@@ -490,10 +490,17 @@ int cc_worker::encode_pdcch_ul(stack_interface_phy_lte::ul_sched_grant_t* grants
       }
 
       // Logging
-      if (logger.info.enabled()) {
+      if (logger.warning.enabled()) {
         char str[512];
         srsran_dci_ul_info(&grants[i].dci, str, 512);
-        logger.info("PDCCH: cc=%d, rnti=0x%x, %s, tti_tx_dl=%d", cc_idx, grants[i].dci.rnti, str, tti_tx_dl);
+        srsran_ul_cfg_t    ul_cfg    = {};
+        uint32_t beta_factor = 0;
+        if (phy->ue_db.get_ul_config(grants[i].dci.rnti, cc_idx, ul_cfg) >= SRSRAN_SUCCESS) {
+          beta_factor = ul_cfg.pusch.beta_factor;
+        }
+        logger.warning("PDCCH UL: cc=%d, rnti=0x%x, snr=%f, bsr=%d, beta=%d, harq=%d, rbs=%d, %s, tti_tx_dl=%d",
+                       cc_idx, grants[i].dci.rnti,
+                       grants[i].snr, grants[i].bsr, beta_factor, grants[i].pid, grants[i].rbs, str, tti_tx_dl);
       }
     }
   }

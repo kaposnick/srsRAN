@@ -80,6 +80,9 @@ public:
     uint8_t*                data;
     bool                    needs_pdcch;
     srsran_softbuffer_rx_t* softbuffer_rx;
+    float                   snr;
+    uint32_t                bsr;
+    uint8_t                 rbs;
   } ul_sched_grant_t;
 
   /**

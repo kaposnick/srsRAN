@@ -51,8 +51,18 @@
 /* DL-SCH AND UL-SCH common functions */
 typedef struct SRSRAN_API {
 
+  /* TB */ 
   uint32_t max_iterations;
   float    avg_iterations;
+  uint32_t total_iterations;
+
+  /* CB */
+  uint32_t no_cbs;
+  uint32_t cb_K1, cb_K2;
+  uint32_t no_cbs_stored;
+  uint32_t no_cbs_ok;
+  uint32_t no_cbs_ko;
+  uint32_t cb_dec_time;
 
   bool llr_is_8bit;
 

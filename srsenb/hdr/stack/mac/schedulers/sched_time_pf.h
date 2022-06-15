@@ -43,6 +43,7 @@ private:
 
   const sched_cell_params_t* cc_cfg         = nullptr;
   float                      fairness_coeff = 1;
+  int                        fix_ul_prbs    = -1;
 
   srsran::tti_point current_tti_rx;
 

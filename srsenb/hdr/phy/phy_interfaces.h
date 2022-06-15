@@ -66,6 +66,7 @@ struct phy_args_t {
   float                   max_prach_offset_us = 10;
   uint32_t                pusch_max_its       = 10;
   uint32_t                nr_pusch_max_its    = 10;
+  uint32_t                pusch_beta_factor   = 1;
   bool                    pusch_8bit_decoder  = false;
   float                   tx_amplitude        = 1.0f;
   uint32_t                nof_phy_threads     = 1;

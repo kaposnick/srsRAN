@@ -89,8 +89,12 @@ typedef struct SRSRAN_API {
   bool               crc;
   bool				 orig_crc;
   float              avg_iterations_block;
+  uint32_t           total_iterations_block;
+  uint32_t           no_cbs, no_cbs_stored, no_cbs_ok, no_cbs_ko;
+  uint32_t           cb_K1, cb_K2;
   uint32_t			 decode_realtime; // in us
   uint32_t			 decode_cputime;  // in us
+  uint32_t       decode_rt_cbs;
   float              evm;
   float              epre_dbfs;
 } srsran_pusch_res_t;

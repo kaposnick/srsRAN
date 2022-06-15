@@ -937,6 +937,9 @@ int mac::get_ul_sched(uint32_t tti_tx_ul, ul_sched_list_t& ul_sched_res_list)
           phy_ul_sched_res->pusch[n].pid           = TTI_RX(tti_tx_ul) % SRSRAN_FDD_NOF_HARQ;
           phy_ul_sched_res->pusch[n].needs_pdcch   = sched_result.pusch[i].needs_pdcch;
           phy_ul_sched_res->pusch[n].dci           = sched_result.pusch[i].dci;
+          phy_ul_sched_res->pusch[n].snr           = sched_result.pusch[i].snr;
+          phy_ul_sched_res->pusch[n].bsr           = sched_result.pusch[i].bsr;
+          phy_ul_sched_res->pusch[n].rbs           = sched_result.pusch[i].rbs;
           phy_ul_sched_res->pusch[n].softbuffer_rx = ue_db[rnti]->get_rx_softbuffer(enb_cc_idx, tti_tx_ul);
 
           // If the Rx soft-buffer is not given, abort reception

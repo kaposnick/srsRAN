@@ -605,6 +605,9 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
 
   bool is_newtx = h->is_empty(0);
   if (is_newtx) {
+    uint32_t req_bytes = get_pending_ul_new_data(tti_tx_ul, enb_cc_idx);
+    data->bsr          = req_bytes;
+
     if (tbinfo.mcs >= 0) {
       tbinfo.tbs_bytes = get_tbs_bytes(tbinfo.mcs, alloc.length(), false, true);
     } else {
@@ -651,6 +654,8 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
   }
 
   if (tbinfo.tbs_bytes >= 0) {
+    data->snr           = cells[enb_cc_idx].tpc_fsm.get_ul_snr_estim();
+    data->rbs           = alloc.length();
     data->tbs           = tbinfo.tbs_bytes;
     data->current_tx_nb = h->nof_retx(0);
     dci->rnti           = rnti;

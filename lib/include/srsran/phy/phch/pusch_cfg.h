@@ -65,6 +65,7 @@ typedef struct SRSRAN_API {
   srsran_pusch_grant_t    grant;
 
   uint32_t max_nof_iterations;
+  uint32_t beta_factor;
   uint32_t last_O_cqi;
   uint32_t K_segm;
   uint32_t current_tx_nb;

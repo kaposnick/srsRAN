@@ -371,6 +371,24 @@ void get_cpu_time_interval(struct rusage* tdata) {
   }
 }
 
+long double sqrt_custom(const int number) {
+	static const long double precision = 1.0e-12L;
+	long double n = (long double)number;
+	long double lo = 1.0L;
+	long double hi = n;
+	long double rt = 0;
+	while ((hi-lo) > precision) {
+		long double g = (lo + hi) / 2.0L;
+		if ( (g*g) > n) {
+			hi = g;
+		} else {
+			lo = g;
+		}
+		rt = (lo + hi) / 2.0L;
+	}
+	return rt;
+}
+
 /** Decodes the PUSCH from the received symbols
  */
 int srsran_pusch_decode(srsran_pusch_t*        q,
@@ -472,10 +490,24 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
 
     // Decode
     ret      = srsran_ulsch_decode(&q->ul_sch, cfg, q->q, q->g, c, out->data, &out->uci);
+    uint32_t sum_sqrt = 0;
+    for (uint32_t beta_cnt = 0; beta_cnt < (cfg->beta_factor - 1); beta_cnt++) {
+      for (uint32_t total_iters = 0; total_iters < q->ul_sch.total_iterations; total_iters++) {
+    		sum_sqrt += sqrt_custom(10);
+    	}
+    }
     out->crc = (ret == 0);
 
     // Save number of iterations
     out->avg_iterations_block = q->ul_sch.avg_iterations;
+    out->total_iterations_block = q->ul_sch.total_iterations;
+    out->no_cbs = q->ul_sch.no_cbs;
+    out->no_cbs_stored = q->ul_sch.no_cbs_stored;
+    out->no_cbs_ok = q->ul_sch.no_cbs_ok;
+    out->no_cbs_ko = q->ul_sch.no_cbs_ko;
+    out->cb_K1 = q->ul_sch.cb_K1;
+    out->cb_K2 = q->ul_sch.cb_K2;
+    out->decode_rt_cbs = q->ul_sch.cb_dec_time;
 
     // Save O_cqi for power control
     cfg->last_O_cqi = srsran_cqi_size(&cfg->uci_cfg.cqi);
@@ -486,7 +518,7 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
       gettimeofday(&t[2], NULL);
       get_time_interval(t);
       get_cpu_time_interval(rusage);
-	  cfg->meas_cpu_time_value = (rusage[0].ru_utime.tv_usec + rusage[0].ru_stime.tv_usec) + 1e6 * (rusage[0].ru_utime.tv_sec + rusage[0].ru_stime.tv_sec);
+	    cfg->meas_cpu_time_value = (rusage[0].ru_utime.tv_usec + rusage[0].ru_stime.tv_usec) + 1e6 * (rusage[0].ru_utime.tv_sec + rusage[0].ru_stime.tv_sec);
       cfg->meas_time_value = t[0].tv_usec + 1e6 * t[0].tv_sec;
 
       out->decode_realtime = cfg->meas_time_value;
@@ -539,11 +571,12 @@ uint32_t srsran_pusch_rx_info(srsran_pusch_cfg_t*    cfg,
   len += srsran_ra_ul_info(&cfg->grant, &str[len], str_len);
 
   len = srsran_print_check(
-      str, str_len, len, ", crc=%s, avg_iter=%.1f", res->crc ? "OK" : "KO", res->avg_iterations_block);
+      str, str_len, len, ", crc=%s, avg_iter=%.1f, total_iter=%d, no_cbs=%d, stored=%d, cbs_ok=%d, cbs_ko=%d, k1=%d, k2=%d, cbs_t=%d", 
+          res->crc ? "OK" : "KO", res->avg_iterations_block, res->total_iterations_block, res->no_cbs, res->no_cbs_stored, res->no_cbs_ok, res->no_cbs_ko, res->cb_K1, res->cb_K2, res->decode_rt_cbs);
 
   len += srsran_uci_data_info(&cfg->uci_cfg, &res->uci, &str[len], str_len - len);
 
-  len = srsran_print_check(str, str_len, len, ", snr=%.1f dB", chest_res->snr_db);
+  len = srsran_print_check(str, str_len, len, ", snr=%.3f dB, noise=%.3f dbm", chest_res->snr_db, chest_res->noise_estimate_dbm);
 
   // Append Energy Per Resource Element
   if (cfg->meas_epre_en) {
