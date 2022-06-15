@@ -292,9 +292,9 @@ void sched_ue::set_dl_sb_cqi(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t sb_
   cells[enb_cc_idx].set_dl_sb_cqi(tti_rx, sb_idx, cqi);
 }
 
-void sched_ue::set_ul_snr(tti_point tti_rx, uint32_t enb_cc_idx, float snr, uint32_t ul_ch_code)
+void sched_ue::set_ul_snr(tti_point tti_rx, uint32_t enb_cc_idx, float snr, float noise_dbm, uint32_t ul_ch_code)
 {
-  cells[enb_cc_idx].set_ul_snr(tti_rx, snr, ul_ch_code);
+  cells[enb_cc_idx].set_ul_snr(tti_rx, snr, noise_dbm, ul_ch_code);
 }
 
 /*******************************************************
@@ -586,7 +586,9 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
                                uint32_t                          enb_cc_idx,
                                prb_interval                      alloc,
                                bool                              needs_pdcch,
+							   bool                              is_msg3,
                                srsran_dci_location_t             dci_pos,
+							   uint8_t                           data_mcs,
                                int                               explicit_mcs,
                                uci_pusch_t                       uci_type)
 {
@@ -597,10 +599,12 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
 
   // Set DCI position
   data->needs_pdcch = needs_pdcch;
+  data->is_msg3     = is_msg3;
   dci->location     = dci_pos;
 
   tbs_info tbinfo;
-  tbinfo.mcs       = (explicit_mcs >= 0) ? explicit_mcs : cells[enb_cc_idx].fixed_mcs_ul;
+//  tbinfo.mcs       = (explicit_mcs >= 0) ? explicit_mcs : cells[enb_cc_idx].fixed_mcs_ul;
+  tbinfo.mcs       = (explicit_mcs >= 0) ? explicit_mcs : data_mcs;
   tbinfo.tbs_bytes = 0;
 
   bool is_newtx = h->is_empty(0);
@@ -614,6 +618,7 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
       uint32_t nof_symb  = 2 * (SRSRAN_CP_NSYMB(cell.cp) - 1) - N_srs;
       uint32_t nof_re    = nof_symb * alloc.length() * SRSRAN_NRE;
       tbinfo             = cqi_to_tbs_ul(cells[enb_cc_idx], alloc.length(), nof_re, req_bytes);
+      data->bsr = req_bytes;
 
       // Reduce MCS to fit UCI if transmitted in this grant
       if (uci_type != UCI_PUSCH_NONE) {
@@ -651,6 +656,9 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
   }
 
   if (tbinfo.tbs_bytes >= 0) {
+	data->snr           = cells[enb_cc_idx].tpc_fsm.get_ul_snr_estim();
+	data->rbs           = alloc.length();
+
     data->tbs           = tbinfo.tbs_bytes;
     data->current_tx_nb = h->nof_retx(0);
     dci->rnti           = rnti;

@@ -64,7 +64,7 @@ public:
   void ul_phr(int phr, uint32_t grant_nof_prb);
   void mac_buffer_state(uint32_t ce_code, uint32_t nof_cmds);
 
-  void set_ul_snr(tti_point tti_rx, uint32_t enb_cc_idx, float snr, uint32_t ul_ch_code);
+  void set_ul_snr(tti_point tti_rx, uint32_t enb_cc_idx, float snr, float noise, uint32_t ul_ch_code);
   void set_dl_ri(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t ri);
   void set_dl_pmi(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t ri);
   void set_dl_cqi(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t cqi);
@@ -131,7 +131,9 @@ public:
                        uint32_t                          enb_cc_idx,
                        prb_interval                      alloc,
                        bool                              needs_pdcch,
+					   bool                              is_msg3,
                        srsran_dci_location_t             cce_range,
+					   uint8_t                           data_mcs,
                        int                               explicit_mcs = -1,
                        uci_pusch_t                       uci_type     = UCI_PUSCH_NONE);
 

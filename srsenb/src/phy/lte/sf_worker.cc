@@ -72,7 +72,7 @@ namespace lte {
 FILE* f;
 #endif
 
-void sf_worker::init(phy_common* phy_)
+void sf_worker::init(phy_common* phy_, int result_fd)
 {
   phy = phy_;
 
@@ -82,7 +82,7 @@ void sf_worker::init(phy_common* phy_)
     auto q = new cc_worker(logger);
 
     // Initialise
-    q->init(phy, i);
+    q->init(phy, i, result_fd);
 
     // Create unique pointer
     cc_workers.push_back(std::unique_ptr<cc_worker>(q));

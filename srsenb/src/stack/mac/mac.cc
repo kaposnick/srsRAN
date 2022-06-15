@@ -417,7 +417,7 @@ int mac::sb_cqi_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t 
   return SRSRAN_SUCCESS;
 }
 
-int mac::snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr, ul_channel_t ch)
+int mac::snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise_dbm, ul_channel_t ch)
 {
   logger.set_context(tti_rx);
   srsran::rwlock_read_guard lock(rwlock);
@@ -428,7 +428,7 @@ int mac::snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr
 
   rrc_h->set_radiolink_ul_state(rnti, snr >= args.rlf_min_ul_snr_estim);
 
-  return scheduler.ul_snr_info(tti_rx, rnti, enb_cc_idx, snr, (uint32_t)ch);
+  return scheduler.ul_snr_info(tti_rx, rnti, enb_cc_idx, snr, noise_dbm, (uint32_t)ch);
 }
 
 int mac::ta_info(uint32_t tti, uint16_t rnti, float ta_us)
@@ -936,7 +936,11 @@ int mac::get_ul_sched(uint32_t tti_tx_ul, ul_sched_list_t& ul_sched_res_list)
           phy_ul_sched_res->pusch[n].current_tx_nb = sched_result.pusch[i].current_tx_nb;
           phy_ul_sched_res->pusch[n].pid           = TTI_RX(tti_tx_ul) % SRSRAN_FDD_NOF_HARQ;
           phy_ul_sched_res->pusch[n].needs_pdcch   = sched_result.pusch[i].needs_pdcch;
+          phy_ul_sched_res->pusch[n].is_mgs3       = sched_result.pusch[i].is_msg3;
           phy_ul_sched_res->pusch[n].dci           = sched_result.pusch[i].dci;
+          phy_ul_sched_res->pusch[n].snr           = sched_result.pusch[i].snr;
+          phy_ul_sched_res->pusch[n].bsr           = sched_result.pusch[i].bsr;
+          phy_ul_sched_res->pusch[n].rbs           = sched_result.pusch[i].rbs;
           phy_ul_sched_res->pusch[n].softbuffer_rx = ue_db[rnti]->get_rx_softbuffer(enb_cc_idx, tti_tx_ul);
 
           // If the Rx soft-buffer is not given, abort reception

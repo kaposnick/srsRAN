@@ -75,6 +75,7 @@ struct ue_tti_events {
     bool     ul_ack     = false;
     int      dl_cqi     = -1;
     int      ul_snr     = -1;
+//    int      ul_noise   = -1;
   };
   srsran::tti_point    tti_rx;
   std::vector<cc_data> cc_list;

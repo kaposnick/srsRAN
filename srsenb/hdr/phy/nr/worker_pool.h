@@ -68,7 +68,7 @@ private:
     {
       return 0;
     }
-    int snr_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, float snr_db, ul_channel_t ch) override { return 0; }
+    int snr_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, float snr_db, float noise_dbm, ul_channel_t ch) override { return 0; }
     int ta_info(uint32_t tti, uint16_t rnti, float ta_us) override { return 0; }
     int ack_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, uint32_t tb_idx, bool ack) override { return 0; }
     int crc_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, uint32_t nof_bytes, bool crc_res, uint32_t ul_nof_probs, bool orig_crc) override { return 0; }

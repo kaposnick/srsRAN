@@ -453,12 +453,6 @@ bool decode_tb_cb(srsran_sch_t*           q,
           // Early stop the whole transport block.
         }
 
-        uint32_t beta_f = 10;
-        uint32_t sum = 0;
-        for(uint32_t beta = 0; beta < 10; ++beta) {
-        	sum += srsran_crc_checksum_byte(crc_ptr, &data[cb_idx * rlen / 8], len_crc);
-        }
-
       } while (cb_noi < q->max_iterations && !early_stop);
 
       INFO("CB %d: rp=%d, n_e=%d, cb_len=%d, CRC=%s, rlen=%d, iterations=%d/%d",

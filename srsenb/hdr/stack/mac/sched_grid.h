@@ -164,6 +164,7 @@ public:
     uint16_t     rnti;
     prb_interval alloc;
     int          msg3_mcs = -1;
+    uint8_t		 data_mcs = -1;
     bool         is_retx() const { return type == NOADAPT_RETX or type == ADAPT_RETX; }
     bool         needs_pdcch() const { return (type == NEWTX and not is_msg3) or type == ADAPT_RETX; }
   };
@@ -188,7 +189,7 @@ public:
   // UL alloc methods
   alloc_result alloc_msg3(sched_ue* user, const sched_interface::dl_sched_rar_grant_t& rargrant);
   alloc_result
-  alloc_ul(sched_ue* user, prb_interval alloc, ul_alloc_t::type_t alloc_type, bool is_msg3 = false, int msg3_mcs = -1);
+  alloc_ul(sched_ue* user, prb_interval alloc, ul_alloc_t::type_t alloc_type, uint8_t data_mcs, bool is_msg3 = false, int msg3_mcs = -1);
   alloc_result reserve_ul_prbs(const prbmask_t& ulmask, bool strict)
   {
     return tti_alloc.reserve_ul_prbs(ulmask, strict);
@@ -202,7 +203,7 @@ public:
   tti_point                       get_tti_tx_dl() const { return to_tx_dl(tti_rx); }
   uint32_t                        get_nof_ctrl_symbols() const;
   const rbgmask_t&                get_dl_mask() const { return tti_alloc.get_dl_mask(); }
-  alloc_result                    alloc_ul_user(sched_ue* user, prb_interval alloc);
+  alloc_result                    alloc_ul_user(sched_ue* user, prb_interval alloc, uint8_t data_mcs = -1);
   const prbmask_t&                get_ul_mask() const { return tti_alloc.get_ul_mask(); }
   tti_point                       get_tti_tx_ul() const { return to_tx_ul(tti_rx); }
   srsran::const_span<rar_alloc_t> get_allocated_rars() const { return rar_allocs; }

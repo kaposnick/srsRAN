@@ -59,7 +59,7 @@ public:
     target_pusch_snr_dB(target_pusch_sn_dB_),
     min_phr_thres(min_phr_thres_),
     snr_estim_list(
-        {ul_ch_snr_estim{ul_snr_avg_alpha, init_ul_snr_value}, ul_ch_snr_estim{ul_snr_avg_alpha, init_ul_snr_value}}),
+        {ul_ch_snr_estim{ul_snr_avg_alpha, init_ul_snr_value, 5}, ul_ch_snr_estim{ul_snr_avg_alpha, init_ul_snr_value, 5}}),
     phr_handling_flag(phr_handling_flag_),
     max_prbs_cached(nof_prb),
     min_tpc_tti_interval(min_tpc_tti_interval_),
@@ -71,7 +71,7 @@ public:
     target_pusch_snr_dB = target_pusch_snr_dB_;
   }
 
-  void set_snr(float snr, uint32_t ul_ch_code)
+  void set_snr(float snr, float noise, uint32_t ul_ch_code)
   {
     static const float MIN_UL_SNR = -4.0f;
     if (snr < MIN_UL_SNR) {
@@ -80,8 +80,10 @@ public:
     }
     if (ul_ch_code < nof_ul_ch_code) {
       snr_estim_list[ul_ch_code].pending_snr = snr;
+      snr_estim_list[ul_ch_code].pending_noise = noise;
     }
   }
+
   void set_phr(int phr_, uint32_t grant_nof_prbs)
   {
     last_phr = phr_;
@@ -123,6 +125,9 @@ public:
         ch_snr.acc_tpc_values = 0;
         ch_snr.snr_avg.push(ch_snr.pending_snr, ch_snr.last_snr_sample_count);
         ch_snr.last_snr_sample       = ch_snr.pending_snr;
+        ch_snr.noise_avg.push(ch_snr.pending_noise, ch_snr.last_snr_sample_count);
+        ch_snr.last_noise_sample     = ch_snr.pending_noise;
+
         ch_snr.last_snr_sample_count = 1;
       }
       ch_snr.pending_snr = null_snr;
@@ -152,6 +157,8 @@ public:
   uint32_t max_ul_prbs() const { return max_prbs_cached; }
 
   float get_ul_snr_estim(uint32_t ul_ch_code = PUSCH_CODE) const { return snr_estim_list[ul_ch_code].snr_avg.value(); }
+
+  float get_ul_noise_estim(uint32_t ul_ch_code = PUSCH_CODE) const { return snr_estim_list[ul_ch_code].noise_avg.value(); }
 
 private:
   uint8_t encode_tpc_delta(int8_t delta)
@@ -240,10 +247,15 @@ private:
   struct ul_ch_snr_estim {
     // pending new snr sample
     float pending_snr = srsran::null_sliding_average<float>::null_value();
+    float pending_noise = srsran::null_sliding_average<float>::null_value();
     // SNR average estimation with irregular sample spacing
     uint32_t                                  last_snr_sample_count = 1; // jump in spacing
     srsran::exp_average_irreg_sampling<float> snr_avg;
     int                                       last_snr_sample;
+
+    srsran::exp_average_irreg_sampling<float> noise_avg;
+    int                                       last_noise_sample;
+
     // Accumulation of past TPC commands
     srsran::sliding_sum<int>       win_tpc_values;
     int                            acc_tpc_values     = 0;
@@ -252,8 +264,9 @@ private:
     uint32_t                       last_tpc_tti_count = 0;
     srsran::rolling_average<float> tpc_snr_avg; // average of SNRs since last TPC != 1
 
-    explicit ul_ch_snr_estim(float exp_avg_alpha, int initial_snr) :
+    explicit ul_ch_snr_estim(float exp_avg_alpha, int initial_snr, int initial_noise) :
       snr_avg(exp_avg_alpha, initial_snr),
+	  noise_avg(exp_avg_alpha, initial_noise),
       win_tpc_values(FDD_HARQ_DELAY_UL_MS + FDD_HARQ_DELAY_DL_MS),
       last_snr_sample(initial_snr)
     {}

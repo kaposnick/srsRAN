@@ -37,7 +37,7 @@ class cc_worker
 public:
   cc_worker(srslog::basic_logger& logger);
   ~cc_worker();
-  void init(phy_common* phy, uint32_t cc_idx);
+  void init(phy_common* phy, uint32_t cc_idx, int result_fd);
   void reset();
 
   cf_t* get_buffer_rx(uint32_t antenna_idx);
@@ -82,6 +82,7 @@ private:
   srslog::basic_logger& logger;
   phy_common*           phy       = nullptr;
   bool                  initiated = false;
+  int                   result_fd = -1;
 
   cf_t*    signal_buffer_rx[SRSRAN_MAX_PORTS] = {};
   cf_t*    signal_buffer_tx[SRSRAN_MAX_PORTS] = {};
@@ -94,6 +95,14 @@ private:
   srsran_ul_sf_cfg_t ul_sf = {};
 
   srsran_softbuffer_tx_t temp_mbsfn_softbuffer = {};
+
+  typedef struct {
+  		uint16_t tti;
+  		uint16_t rnti;
+  		uint32_t decoding_time;
+  		char result;
+  		uint32_t bits;
+  	} shced_ai_result;
 
   // Class to store user information
   class ue

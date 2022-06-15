@@ -32,6 +32,7 @@ sched_time_pf::sched_time_pf(const sched_cell_params_t& cell_params_, const sche
   if (not sched_args.sched_policy_args.empty()) {
     fairness_coeff = std::stof(sched_args.sched_policy_args);
   }
+  fix_ul_prbs = sched_args.pusch_nof_prbs;
 
   std::vector<ue_ctxt*> dl_storage;
   dl_storage.reserve(SRSENB_MAX_UES);
@@ -156,6 +157,9 @@ uint32_t sched_time_pf::try_ul_alloc(ue_ctxt& ue_ctxt, sched_ue& ue, sf_sched* t
       return 0;
     }
     uint32_t     pending_rb = ue.get_required_prb_ul(cc_cfg->enb_cc_idx, pending_data);
+    if (fix_ul_prbs >= 0) {
+    	pending_rb = (uint32_t) fix_ul_prbs;
+    }
     prb_interval alloc      = find_contiguous_ul_prbs(pending_rb, tti_sched->get_ul_mask());
     if (alloc.empty()) {
       return 0;

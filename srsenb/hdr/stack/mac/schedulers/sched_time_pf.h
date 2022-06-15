@@ -29,7 +29,7 @@
 
 namespace srsenb {
 
-class sched_time_pf final : public sched_base
+class sched_time_pf : public sched_base
 {
   using ue_cit_t = sched_ue_list::const_iterator;
 
@@ -38,13 +38,16 @@ public:
   void sched_dl_users(sched_ue_list& ue_db, sf_sched* tti_sched) override;
   void sched_ul_users(sched_ue_list& ue_db, sf_sched* tti_sched) override;
 
-private:
+protected:
   void new_tti(sched_ue_list& ue_db, sf_sched* tti_sched);
+  srsran::tti_point current_tti_rx;
+
+private:
 
   const sched_cell_params_t* cc_cfg         = nullptr;
   float                      fairness_coeff = 1;
+  int                        fix_ul_prbs = -1;
 
-  srsran::tti_point current_tti_rx;
 
   struct ue_ctxt {
     ue_ctxt(uint16_t rnti_, float fairness_coeff_) : rnti(rnti_), fairness_coeff(fairness_coeff_) {}

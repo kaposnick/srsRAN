@@ -32,6 +32,7 @@ class worker_pool
 {
   srsran::thread_pool                      pool;
   std::vector<std::unique_ptr<sf_worker> > workers;
+  int                                      result_fd;
 
 public:
   sf_worker* operator[](std::size_t pos) { return workers.at(pos).get(); }

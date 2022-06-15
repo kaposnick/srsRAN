@@ -25,6 +25,8 @@
 #include "srsenb/hdr/phy/lte/cc_worker.h"
 #include "sys/time.h"
 #include "sys/resource.h"
+#include <string.h>
+#include <unistd.h>
 
 #define Error(fmt, ...)                                                                                                \
   if (SRSRAN_DEBUG_ENABLED)                                                                                            \
@@ -86,13 +88,15 @@ cc_worker::~cc_worker()
 FILE* f;
 #endif
 
-void cc_worker::init(phy_common* phy_, uint32_t cc_idx_)
+void cc_worker::init(phy_common* phy_, uint32_t cc_idx_, int result_fd)
 {
   phy                   = phy_;
   cc_idx                = cc_idx_;
   srsran_cell_t cell    = phy_->get_cell(cc_idx);
   uint32_t      nof_prb = phy_->get_nof_prb(cc_idx);
   uint32_t      sf_len  = SRSRAN_SF_LEN_PRB(nof_prb);
+  this->result_fd = result_fd;
+
 
   // Init cell here
   for (uint32_t p = 0; p < phy->get_nof_ports(cc_idx); p++) {
@@ -333,11 +337,12 @@ bool cc_worker::decode_pusch_rnti(stack_interface_phy_lte::ul_sched_grant_t& ul_
   ue_db[rnti]->phich_grant.n_dmrs       = ul_grant.dci.n_dmrs;
 
   float snr_db = enb_ul.chest_res.snr_db;
+  float noise_dbm = enb_ul.chest_res.noise_estimate_dbm;
 
   // Notify MAC of RL status
   if (snr_db >= PUSCH_RL_SNR_DB_TH) {
     // Notify MAC UL channel quality
-    phy->stack->snr_info(ul_sf.tti, rnti, cc_idx, snr_db, mac_interface_phy_lte::PUSCH);
+    phy->stack->snr_info(ul_sf.tti, rnti, cc_idx, snr_db, noise_dbm, mac_interface_phy_lte::PUSCH);
 
     // Notify MAC of Time Alignment only if it enabled and valid measurement, ignore value otherwise
     if (ul_cfg.pusch.meas_ta_en and not std::isnan(enb_ul.chest_res.ta_us) and not std::isinf(enb_ul.chest_res.ta_us)) {
@@ -378,14 +383,29 @@ void cc_worker::decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, 
     if (ul_grant.data != nullptr) {
       // Inform MAC about the CRC result
       phy->stack->crc_info(tti_rx, rnti, cc_idx, ul_cfg.pusch.grant.tb.tbs / 8, pusch_res.crc, ul_cfg.pusch.grant.L_prb, pusch_res.orig_crc);
+
+      shced_ai_result ret = {
+    		  (uint16_t) tti_rx,
+			  rnti,
+			  pusch_res.decode_realtime,
+			  (char) pusch_res.orig_crc,
+			  (uint32_t) ul_cfg.pusch.grant.tb.tbs
+      };
+
+      if (!ul_grant.is_mgs3) {
+    	  char sched_ret_buffer[sizeof(shced_ai_result)];
+    	  memcpy(sched_ret_buffer, &ret, sizeof(ret));
+    	  write(this->result_fd, sched_ret_buffer, sizeof(sched_ret_buffer));
+      }
+
       // Push PDU buffer
       phy->stack->push_pdu(
           tti_rx, rnti, cc_idx, ul_cfg.pusch.grant.tb.tbs / 8, pusch_res.crc, ul_cfg.pusch.grant.L_prb);
       // Logging
-      if (logger.info.enabled()) {
+      if (logger.warning.enabled()) {
         char str[512];
         srsran_pusch_rx_info(&ul_cfg.pusch, &pusch_res, &enb_ul.chest_res, str, sizeof(str));
-        logger.info("PUSCH: cc=%d, %s", cc_idx, str);
+        logger.warning("PUSCH: cc=%d, %s", cc_idx, str);
       }
     }
   }
@@ -430,7 +450,7 @@ int cc_worker::decode_pucch()
 
         if (pucch_res.detected and pucch_res.ta_valid) {
           phy->stack->ta_info(tti_rx, rnti, pucch_res.ta_us);
-          phy->stack->snr_info(tti_rx, rnti, cc_idx, pucch_res.snr_db, mac_interface_phy_lte::PUCCH);
+          phy->stack->snr_info(tti_rx, rnti, cc_idx, pucch_res.snr_db, pucch_res.noise_dbm, mac_interface_phy_lte::PUCCH);
         }
 
         // Logging
@@ -454,7 +474,8 @@ int cc_worker::encode_phich(stack_interface_phy_lte::ul_sched_ack_t* acks, uint3
     if (acks[i].rnti && ue_db.count(acks[i].rnti)) {
       srsran_enb_dl_put_phich(&enb_dl, &ue_db[acks[i].rnti]->phich_grant, acks[i].ack);
 
-      Info("PHICH: rnti=0x%x, hi=%d, I_lowest=%d, n_dmrs=%d, tti_tx_dl=%d",
+      Info("PHICH: cc=%d, rnti=0x%x, hi=%d, I_lowest=%d, n_dmrs=%d, tti_tx_dl=%d",
+    	   cc_idx,
            acks[i].rnti,
            acks[i].ack,
            ue_db[acks[i].rnti]->phich_grant.n_prb_lowest,
@@ -490,10 +511,15 @@ int cc_worker::encode_pdcch_ul(stack_interface_phy_lte::ul_sched_grant_t* grants
       }
 
       // Logging
-      if (logger.info.enabled()) {
+      if (logger.warning.enabled()) {
         char str[512];
         srsran_dci_ul_info(&grants[i].dci, str, 512);
-        logger.info("PDCCH: cc=%d, rnti=0x%x, %s, tti_tx_dl=%d", cc_idx, grants[i].dci.rnti, str, tti_tx_dl);
+        // snr, bsr, harq, rbs
+
+        logger.warning("PDCCH UL: cc=%d, rnti=0x%x, snr=%f, bsr=%d, harq=%d, rbs=%d, %s, tti_tx_dl=%d",
+        		cc_idx, grants[i].dci.rnti,
+				grants[i].snr, grants[i].bsr, grants[i].pid, grants[i].rbs,
+				str, tti_tx_dl);
       }
     }
   }

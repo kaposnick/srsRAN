@@ -39,8 +39,8 @@ int test_finite_target_snr()
 
   // TEST: While UL SNR ~ target, no TPC commands are sent
   for (uint32_t i = 0; i < 100 and tpcfsm.get_ul_snr_estim(0) < 14; ++i) {
-    tpcfsm.set_snr(15, 0);
-    tpcfsm.set_snr(15, 1);
+    tpcfsm.set_snr(15,0,0);
+    tpcfsm.set_snr(15,0,1);
     tpcfsm.new_tti();
   }
   for (uint32_t i = 0; i < 100; ++i) {
@@ -53,8 +53,8 @@ int test_finite_target_snr()
   // - TPC commands should be sent to decrease power
   // - The sum power of TPC commands should not exceed the difference between current and target SNRs
   int snr_diff = 10;
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUSCH_CODE);
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUCCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUSCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUCCH_CODE);
   int sum_pusch = 0, sum_pucch = 0;
   for (uint32_t i = 0; i < 100; ++i) {
     tpcfsm.new_tti();
@@ -68,8 +68,8 @@ int test_finite_target_snr()
   // - TPC commands should be sent to increase power
   // - The sum of TPC commands should not exceed the difference between current and target SNRs
   snr_diff = -10;
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUSCH_CODE);
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUCCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUSCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUCCH_CODE);
   sum_pusch = 0;
   sum_pucch = 0;
   for (uint32_t i = 0; i < 100; ++i) {
@@ -85,8 +85,8 @@ int test_finite_target_snr()
   // - The accumulation of TPCs should lead to next PHR being zero.
   snr_diff     = -10;
   int next_phr = -2;
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUSCH_CODE);
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUCCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUSCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUCCH_CODE);
   sum_pucch = 0;
   for (uint32_t i = 0; i < 3; ++i) {
     tpcfsm.set_phr(next_phr, 1);
@@ -107,7 +107,7 @@ int test_finite_target_snr()
   next_phr = 5;
   snr_diff = -10;
   tpcfsm.set_phr(next_phr, 1);
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUSCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUSCH_CODE);
   for (uint32_t j = 0; j < 100; ++j) {
     tpcfsm.new_tti();
     int tpc_pusch = decode_tpc(tpcfsm.encode_pusch_tpc());
@@ -138,8 +138,8 @@ int test_undefined_target_snr()
 
   // TEST: SNR info should not affect TPC in undefined target SNR mode
   int snr_info = 10;
-  tpcfsm.set_snr(snr_info, tpc::PUSCH_CODE);
-  tpcfsm.set_snr(snr_info, tpc::PUCCH_CODE);
+  tpcfsm.set_snr(snr_info, 0, tpc::PUSCH_CODE);
+  tpcfsm.set_snr(snr_info, 0, tpc::PUCCH_CODE);
   sum_pusch = 0;
   sum_pucch = 0;
   for (uint32_t i = 0; i < 100; ++i) {
@@ -199,8 +199,8 @@ void test_finite_target_snr_tpc_period_above_1()
 
   // TEST: While UL SNR ~ target, no TPC commands are sent
   for (uint32_t i = 0; i < 100 and tpcfsm.get_ul_snr_estim(0) < 14; ++i) {
-    tpcfsm.set_snr(15, 0);
-    tpcfsm.set_snr(15, 1);
+    tpcfsm.set_snr(15,0,  0);
+    tpcfsm.set_snr(15,0,  1);
     tpcfsm.new_tti();
   }
   for (uint32_t i = 0; i < 100; ++i) {
@@ -213,8 +213,8 @@ void test_finite_target_snr_tpc_period_above_1()
   // - TPC commands should be sent to decrease power
   // - The sum power of TPC commands should not exceed the difference between current and target SNRs
   int snr_diff = 10;
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUSCH_CODE);
-  tpcfsm.set_snr(target_snr + snr_diff, tpc::PUCCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUSCH_CODE);
+  tpcfsm.set_snr(target_snr + snr_diff, 0, tpc::PUCCH_CODE);
   int sum_pusch = 0, sum_pucch = 0;
   for (uint32_t i = 0; i < 100; ++i) {
     tpcfsm.new_tti();

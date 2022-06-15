@@ -543,7 +543,7 @@ uint32_t srsran_pusch_rx_info(srsran_pusch_cfg_t*    cfg,
 
   len += srsran_uci_data_info(&cfg->uci_cfg, &res->uci, &str[len], str_len - len);
 
-  len = srsran_print_check(str, str_len, len, ", snr=%.1f dB", chest_res->snr_db);
+  len = srsran_print_check(str, str_len, len, ", snr=%.1f dB, noise=%.1f dbm", chest_res->snr_db, chest_res->noise_estimate_dbm);
 
   // Append Energy Per Resource Element
   if (cfg->meas_epre_en) {

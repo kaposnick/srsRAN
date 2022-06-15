@@ -553,7 +553,7 @@ alloc_result sf_sched::alloc_dl_user(sched_ue* user, const rbgmask_t& user_mask,
 }
 
 alloc_result
-sf_sched::alloc_ul(sched_ue* user, prb_interval alloc, ul_alloc_t::type_t alloc_type, bool is_msg3, int msg3_mcs)
+sf_sched::alloc_ul(sched_ue* user, prb_interval alloc, ul_alloc_t::type_t alloc_type, uint8_t data_mcs, bool is_msg3, int msg3_mcs)
 {
   if (ul_data_allocs.full()) {
     logger.debug("SCHED: Maximum number of UL allocations=%zd reached", ul_data_allocs.size());
@@ -587,11 +587,12 @@ sf_sched::alloc_ul(sched_ue* user, prb_interval alloc, ul_alloc_t::type_t alloc_
   ul_alloc.rnti        = user->get_rnti();
   ul_alloc.alloc       = alloc;
   ul_alloc.msg3_mcs    = msg3_mcs;
+  ul_alloc.data_mcs    = data_mcs;
 
   return alloc_result::success;
 }
 
-alloc_result sf_sched::alloc_ul_user(sched_ue* user, prb_interval alloc)
+alloc_result sf_sched::alloc_ul_user(sched_ue* user, prb_interval alloc, uint8_t data_mcs)
 {
   // check whether adaptive/non-adaptive retx/newtx
   ul_alloc_t::type_t alloc_type;
@@ -605,7 +606,7 @@ alloc_result sf_sched::alloc_ul_user(sched_ue* user, prb_interval alloc)
     alloc_type = ul_alloc_t::NOADAPT_RETX;
   }
 
-  return alloc_ul(user, alloc, alloc_type, h->is_msg3());
+  return alloc_ul(user, alloc, alloc_type, data_mcs, h->is_msg3());
 }
 
 alloc_result sf_sched::alloc_phich(sched_ue* user)
@@ -823,6 +824,8 @@ void sf_sched::set_ul_sched_result(const sf_cch_allocator::alloc_result_t& dci_r
       cce_range = dci_result[ul_alloc.dci_idx]->dci_pos;
     }
 
+
+
     // If UCI is encoded in the current carrier
     uci_pusch_t uci_type = is_uci_included(this, *cc_results, user, cc_cfg->enb_cc_idx);
 
@@ -835,7 +838,9 @@ void sf_sched::set_ul_sched_result(const sf_cch_allocator::alloc_result_t& dci_r
                                      cc_cfg->enb_cc_idx,
                                      ul_alloc.alloc,
                                      ul_alloc.needs_pdcch(),
+									 ul_alloc.is_msg3,
                                      cce_range,
+									 ul_alloc.data_mcs,
                                      ul_alloc.msg3_mcs,
                                      uci_type);
 
@@ -861,11 +866,12 @@ void sf_sched::set_ul_sched_result(const sf_cch_allocator::alloc_result_t& dci_r
 
     // Print Resulting UL Allocation
     uint32_t old_pending_bytes = user->get_pending_ul_old_data();
-    if (logger.info.enabled()) {
+    if (logger.warning.enabled()) {
       fmt::memory_buffer str_buffer;
+      const float snr_estim = user->find_ue_carrier(get_enb_cc_idx())->tpc_fsm.get_ul_snr_estim();
       fmt::format_to(
           str_buffer,
-          "SCHED: {} {} rnti=0x{:x}, cc={}, pid={}, dci=({},{}), prb={}, n_rtx={}, cfi={}, tbs={}, bsr={} ({}-{})",
+          "SCHED: {} {} rnti=0x{:x}, cc={}, pid={}, dci=({},{}), prb={}, mcs={}, n_rtx={}, cfi={}, tbs={}, snr={}, bsr={} ({}-{})",
           ul_alloc.is_msg3 ? "Msg3" : "UL",
           ul_alloc.is_retx() ? "retx" : "tx",
           user->get_rnti(),
@@ -874,13 +880,15 @@ void sf_sched::set_ul_sched_result(const sf_cch_allocator::alloc_result_t& dci_r
           pusch.dci.location.L,
           pusch.dci.location.ncce,
           ul_alloc.alloc,
+		  pusch.dci.tb.mcs_idx,
           h->nof_retx(0),
           tti_alloc.get_cfi(),
           tbs,
+		  snr_estim,
           new_pending_bytes,
           total_data_before,
           old_pending_bytes);
-      logger.info("%s", srsran::to_c_str(str_buffer));
+      logger.warning("%s", srsran::to_c_str(str_buffer));
     }
 
     pusch.current_tx_nb = h->nof_retx(0);
@@ -892,7 +900,7 @@ alloc_result sf_sched::alloc_msg3(sched_ue* user, const sched_interface::dl_sche
   // Derive PRBs from allocated RAR grants
   prb_interval msg3_alloc = prb_interval::riv_to_prbs(rargrant.grant.rba, cc_cfg->nof_prb());
 
-  alloc_result ret = alloc_ul(user, msg3_alloc, sf_sched::ul_alloc_t::NEWTX, true, rargrant.grant.trunc_mcs);
+  alloc_result ret = alloc_ul(user, msg3_alloc, sf_sched::ul_alloc_t::NEWTX, -1, true, rargrant.grant.trunc_mcs);
   if (ret != alloc_result::success) {
     fmt::memory_buffer str_buffer;
     fmt::format_to(str_buffer, "{}", msg3_alloc);

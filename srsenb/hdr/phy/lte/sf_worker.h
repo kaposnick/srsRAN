@@ -38,7 +38,7 @@ class sf_worker : public srsran::thread_pool::worker
 public:
   sf_worker(srslog::basic_logger& logger) : logger(logger) {}
   ~sf_worker();
-  void init(phy_common* phy);
+  void init(phy_common* phy, int result_fd);
 
   cf_t* get_buffer_rx(uint32_t cc_idx, uint32_t antenna_idx);
   void  set_context(const srsran::phy_common_interface::worker_context_t& w_ctx);

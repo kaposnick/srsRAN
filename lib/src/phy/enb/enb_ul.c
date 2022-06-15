@@ -195,6 +195,7 @@ static int get_pucch(srsran_enb_ul_t* q, srsran_ul_sf_cfg_t* ul_sf, srsran_pucch
       return SRSRAN_ERROR;
     }
     pucch_res.snr_db = q->chest_res.snr_db;
+    pucch_res.noise_dbm = q->chest_res.noise_estimate_dbm;
 
     ret = srsran_pucch_decode(&q->pucch, ul_sf, cfg, &q->chest_res, q->sf_symbols, &pucch_res);
     if (ret < SRSRAN_SUCCESS) {

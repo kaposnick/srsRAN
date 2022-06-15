@@ -57,6 +57,7 @@ public:
   struct sched_args_t {
     std::string sched_policy              = "time_pf";
     std::string sched_policy_args         = "2";
+    int 		pusch_nof_prbs            = -1;
     int         pdsch_mcs                 = -1;
     int         pdsch_max_mcs             = 28;
     int         pusch_mcs                 = -1;
@@ -198,9 +199,13 @@ public:
 
   typedef struct {
     bool            needs_pdcch;
+    bool            is_msg3;
     uint32_t        current_tx_nb;
     uint32_t        tbs;
     srsran_dci_ul_t dci;
+    float snr;
+    uint32_t bsr; // bsr
+    uint8_t  rbs; // number of resource blocks
   } ul_sched_data_t;
 
   struct dl_sched_rar_info_t {
@@ -304,7 +309,7 @@ public:
   virtual int ul_sr_info(uint32_t tti, uint16_t rnti)                                                       = 0;
   virtual int ul_bsr(uint16_t rnti, uint32_t lcg_id, uint32_t bsr)                                          = 0;
   virtual int ul_phr(uint16_t rnti, int phr, uint32_t ul_nof_prb)                                           = 0;
-  virtual int ul_snr_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, float snr, uint32_t ul_ch_code) = 0;
+  virtual int ul_snr_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise, uint32_t ul_ch_code) = 0;
 
   /* Run Scheduler for this tti */
   virtual int dl_sched(uint32_t tti, uint32_t enb_cc_idx, dl_sched_res_t& sched_result) = 0;

@@ -80,6 +80,10 @@ public:
     uint8_t*                data;
     bool                    needs_pdcch;
     srsran_softbuffer_rx_t* softbuffer_rx;
+    float                   snr;
+    uint32_t                bsr;
+    uint8_t                 rbs;
+    bool                    is_mgs3;
   } ul_sched_grant_t;
 
   /**
@@ -156,7 +160,7 @@ public:
    * @param ch Indicates uplink channel (PUSCH, PUCCH or SRS)
    * @return SRSRAN_SUCCESS if no error occurs, SRSRAN_ERROR* if an error occurs
    */
-  virtual int snr_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, float snr_db, ul_channel_t ch) = 0;
+  virtual int snr_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, float snr_db, float noise_dbm, ul_channel_t ch) = 0;
 
   /**
    * PHY callback for giving MAC the Time Aligment information in microseconds of a given RNTI during a TTI processing
