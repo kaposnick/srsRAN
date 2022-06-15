@@ -57,7 +57,7 @@ public:
   struct sched_args_t {
     std::string sched_policy              = "time_pf";
     std::string sched_policy_args         = "2";
-    int 		pusch_nof_prbs            = -1;
+    int 		    pusch_nof_prbs            = -1;
     int         pdsch_mcs                 = -1;
     int         pdsch_max_mcs             = 28;
     int         pusch_mcs                 = -1;
@@ -203,9 +203,9 @@ public:
     uint32_t        current_tx_nb;
     uint32_t        tbs;
     srsran_dci_ul_t dci;
-    float snr;
-    uint32_t bsr; // bsr
-    uint8_t  rbs; // number of resource blocks
+    float           snr;
+    uint32_t        bsr; // bsr
+    uint8_t         rbs; // number of resource blocks
   } ul_sched_data_t;
 
   struct dl_sched_rar_info_t {

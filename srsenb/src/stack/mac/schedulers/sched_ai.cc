@@ -14,7 +14,7 @@ sched_ai::sched_ai(const sched_cell_params_t& cell_params_, const sched_interfac
 
 	// create the pipe
 	mkfifo(fifo_out, 0666);
-	fd_to_ai_sched = open(fifo_out, O_CREAT | O_WRONLY);
+	fd_to_ai_sched = open(fifo_out, O_CREAT | O_WRONLY, 0666);
 	if (fd_to_ai_sched < 0) {
 		std::cerr << "Error opening " << fd_to_ai_sched << std::endl;
 	}

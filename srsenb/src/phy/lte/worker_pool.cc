@@ -33,7 +33,10 @@ bool worker_pool::init(const phy_args_t& args, phy_common* common, srslog::sink&
   srslog::basic_levels log_level = srslog::str_to_basic_level(args.log.phy_level);
   const char * return_in = "/tmp/return_in";
   mkfifo(return_in, 0666);
-  result_fd = open(return_in, O_CREAT | O_WRONLY);
+  result_fd = open(return_in, O_CREAT | O_WRONLY, 0666);
+  if (result_fd < 0) {
+    int j = 0;
+  }
   for (uint32_t i = 0; i < args.nof_phy_threads; i++) {
     auto& log = srslog::fetch_basic_logger(fmt::format("PHY{}", i), log_sink);
     log.set_level(log_level);

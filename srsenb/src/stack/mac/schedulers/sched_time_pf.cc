@@ -156,10 +156,7 @@ uint32_t sched_time_pf::try_ul_alloc(ue_ctxt& ue_ctxt, sched_ue& ue, sf_sched* t
     if (pending_data == 0) {
       return 0;
     }
-    uint32_t     pending_rb = ue.get_required_prb_ul(cc_cfg->enb_cc_idx, pending_data);
-    if (fix_ul_prbs >= 0) {
-    	pending_rb = (uint32_t) fix_ul_prbs;
-    }
+    uint32_t     pending_rb = (fix_ul_prbs >= 0) ? (uint32_t) fix_ul_prbs : ue.get_required_prb_ul(cc_cfg->enb_cc_idx, pending_data);
     prb_interval alloc      = find_contiguous_ul_prbs(pending_rb, tti_sched->get_ul_mask());
     if (alloc.empty()) {
       return 0;

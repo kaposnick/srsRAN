@@ -23,6 +23,7 @@
 #include "srsran/phy/utils/debug.h"
 #include "srsran/phy/utils/vector.h"
 #include "srsran/srsran.h"
+#include <sys/time.h>
 #include <assert.h>
 #include <math.h>
 #include <stdbool.h>
@@ -386,6 +387,15 @@ bool decode_tb_cb(srsran_sch_t*           q,
   }
 
   q->avg_iterations = 0;
+  q->total_iterations = 0;
+  q->no_cbs = cb_segm->C;
+  q->cb_K1 = cb_segm->K1;
+  q->cb_K2 = cb_segm->K2;
+  q->no_cbs_stored = q->no_cbs_ok = q->no_cbs_ko = 0;
+  q->cb_dec_time = 0;
+
+  struct timeval t[3];
+  gettimeofday(&t[1], NULL);
 
   for (int cb_idx = 0; cb_idx < cb_segm->C; cb_idx++) {
     /* Do not process blocks with CRC Ok */
@@ -430,6 +440,7 @@ bool decode_tb_cb(srsran_sch_t*           q,
           srsran_tdec_iteration(&q->decoder, softbuffer->buffer_f[cb_idx], &data[cb_idx * rlen / 8]);
         }
         q->avg_iterations++;
+        q->total_iterations++;
         cb_noi++;
 
         uint32_t      len_crc;
@@ -465,7 +476,14 @@ bool decode_tb_cb(srsran_sch_t*           q,
            cb_noi,
            q->max_iterations);
 
+      if (early_stop) {
+        q->no_cbs_ok++;
+      } else {
+        q->no_cbs_ko++;
+      }
+
     } else {
+      q->no_cbs_stored++;
       // Copy decoded data from previous transmissions
       uint32_t cb_len = cb_idx < cb_segm->C1 ? cb_segm->K1 : cb_segm->K2;
       uint32_t rlen   = cb_segm->C == 1 ? cb_len : (cb_len - 24);
@@ -489,7 +507,15 @@ bool decode_tb_cb(srsran_sch_t*           q,
     }
   }
 
-  q->avg_iterations /= (float)cb_segm->C;
+  gettimeofday(&t[2], NULL);
+  get_time_interval(t);
+  q->cb_dec_time = t[0].tv_usec + 1e6 * t[0].tv_sec;
+  if (cb_segm->C == q->no_cbs_stored) {
+    q->avg_iterations = 0;
+  } else {
+    q->avg_iterations /= (float) (cb_segm->C - q->no_cbs_stored);
+  }
+  // q->avg_iterations /= (float)cb_segm->C;
   return softbuffer->tb_crc;
 }
 
