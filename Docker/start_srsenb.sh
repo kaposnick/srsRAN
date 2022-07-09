@@ -7,13 +7,14 @@
 # cpu=0.75
 # noise=0.40
 
-sudo /home/naposto/bin/srsran/bin/srsenb /home/naposto/.config/srsran/enb.conf \
+sudo /home/naposto/tools/srsRAN/bin/srsenb /home/naposto/.config/srsran/enb.conf \
     --enb_files.sib_config /home/naposto/.config/srsran/sib.conf \
     --enb_files.rr_config /home/naposto/.config/srsran/rr.conf \
     --enb_files.rb_config /home/naposto/.config/srsran/rb.conf \
-    --log.phy_level=warning \
-    --log.mac_level=warning \
-    --scheduler.policy=time_sched_ai \
+    --log.phy_level=info \
+    --log.mac_level=info \
+    --expert.pusch_beta_factor=700 \
+    --scheduler.policy=time_sched_pf \
     --log.filename=/tmp/enb.log \
     --rf.device_name=zmq \
     --rf.device_args="fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6" 

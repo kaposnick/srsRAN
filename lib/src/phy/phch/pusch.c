@@ -526,7 +526,7 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
 
       out->orig_crc = out->crc;
 
-//      out->crc = (out->decode_realtime < 3000) ? out->crc : false;
+     out->crc = (out->decode_realtime < 3000) ? out->crc : false;
     }
   }
 

@@ -392,7 +392,7 @@ void cc_worker::decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, 
 			  (uint32_t) ul_cfg.pusch.grant.tb.tbs
       };
 
-      if (!ul_grant.is_mgs3) {
+      if (!ul_grant.is_mgs3 && ul_grant.dci.tb.rv == 0) {
     	  char sched_ret_buffer[sizeof(shced_ai_result)];
     	  memcpy(sched_ret_buffer, &ret, sizeof(ret));
     	  int bytes_write = write(this->result_fd, sched_ret_buffer, sizeof(sched_ret_buffer));
