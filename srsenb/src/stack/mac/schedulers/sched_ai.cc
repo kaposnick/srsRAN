@@ -18,6 +18,11 @@ sched_ai::sched_ai(const sched_cell_params_t& cell_params_, const sched_interfac
 	if (fd_to_ai_sched < 0) {
 		std::cerr << "Error opening " << fd_to_ai_sched << std::endl;
 	}
+	mkfifo(fifo_verify_action, 0666);
+	fd_verify_action = open(fifo_verify_action, O_CREAT | O_WRONLY, 0666);
+	if (fd_verify_action < 0) {
+		std::cerr << "Error opening " << fd_verify_action << std::endl;
+	}
 
 	mkfifo(fifo_in, 0666);
 	fd_from_ai_sched = open(fifo_in, O_RDONLY);
@@ -133,10 +138,10 @@ void sched_ai::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t
 			(uint16_t) tti_sched->get_tti_tx_ul().to_uint(),
 			(uint16_t) user.get_rnti(),
 			(uint32_t) pending_data,
-			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_noise_estim(),
-	        (uint16_t) 700 };
+			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_estim(),
+	        (uint16_t) 1000 };
 	memcpy(sched_tx_buffer, &ai_tx, sizeof(ai_tx));
-	int bytes_write = write(fd_to_ai_sched, sched_tx_buffer, sizeof(sched_tx_buffer));
+	int bytes_write = write(fd_to_ai_sched, sched_tx_buffer, sizeof(sched_tx_buffer)); 
 	int bytes_read = read(fd_from_ai_sched, sched_rcv_buffer, sizeof(sched_rcv_buffer));
 	if (bytes_read < 0) {
 		std::cerr << "pipe read error" << std::endl;
@@ -146,10 +151,12 @@ void sched_ai::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t
 	memcpy(&ai_decision, sched_rcv_buffer, sizeof(ai_decision));
 	uint8_t pending_rb = ai_decision.num_rbs;
 	if (pending_rb <= 0) {
+		verify_action(0);
 		return;
 	}
 	prb_interval alloc = find_contiguous_ul_prbs(pending_rb, tti_sched->get_ul_mask());
 	if (alloc.empty()) {
+		verify_action(0);
 		return;
 	}
 	uint8_t mcs = ai_decision.mcs;
@@ -157,7 +164,16 @@ void sched_ai::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t
 	if (ret == alloc_result::no_cch_space) {
 		logger.info(
 		          "SCHED: rnti=0x%x, cc=%d, Couldn't find space in PDCCH for UL tx", user.get_rnti(), cc_cfg->enb_cc_idx);
+		verify_action(0);
+		return;
 	}
+	verify_action(1);
+}
+
+void sched_ai::verify_action(uint32_t verify_action_int) {
+	sched_verify_action verify_action_struct = {verify_action_int};
+	memcpy(sched_vrf_action_buffer, &verify_action_struct, sizeof(verify_action_struct));
+	int bytes_write = write(fd_verify_action, sched_vrf_action_buffer, sizeof(sched_vrf_action_buffer));
 }
 
 }

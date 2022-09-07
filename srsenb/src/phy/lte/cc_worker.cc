@@ -382,14 +382,22 @@ void cc_worker::decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, 
     // Notify MAC new received data and HARQ Indication value
     if (ul_grant.data != nullptr) {
       // Inform MAC about the CRC result
-      phy->stack->crc_info(tti_rx, rnti, cc_idx, ul_cfg.pusch.grant.tb.tbs / 8, pusch_res.crc, ul_cfg.pusch.grant.L_prb, pusch_res.orig_crc);
+      // Logging
+      if (logger.warning.enabled()) {
+        char str[512];
+        srsran_pusch_rx_info(&ul_cfg.pusch, &pusch_res, &enb_ul.chest_res, str, sizeof(str));
+        logger.warning("PUSCH: cc=%d, %s", cc_idx, str);
+      }
 
       shced_ai_result ret = {
     		  (uint16_t) tti_rx,
 			  rnti,
 			  pusch_res.decode_realtime,
 			  (char) pusch_res.orig_crc,
-			  (uint32_t) ul_cfg.pusch.grant.tb.tbs
+			  (uint32_t) ul_cfg.pusch.grant.tb.tbs,
+        (uint16_t) ul_cfg.pusch.grant.tb.mcs_idx,
+        (uint16_t) ul_grant.rbs,
+        (uint32_t) (enb_ul.chest_res.snr_db * 1000.0f)
       };
 
       if (!ul_grant.is_mgs3 && ul_grant.dci.tb.rv == 0) {
@@ -397,16 +405,11 @@ void cc_worker::decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, 
     	  memcpy(sched_ret_buffer, &ret, sizeof(ret));
     	  int bytes_write = write(this->result_fd, sched_ret_buffer, sizeof(sched_ret_buffer));
       }
+      phy->stack->crc_info(tti_rx, rnti, cc_idx, ul_cfg.pusch.grant.tb.tbs / 8, pusch_res.crc, ul_cfg.pusch.grant.L_prb, pusch_res.orig_crc);
 
       // Push PDU buffer
       phy->stack->push_pdu(
           tti_rx, rnti, cc_idx, ul_cfg.pusch.grant.tb.tbs / 8, pusch_res.crc, ul_cfg.pusch.grant.L_prb);
-      // Logging
-      if (logger.warning.enabled()) {
-        char str[512];
-        srsran_pusch_rx_info(&ul_cfg.pusch, &pusch_res, &enb_ul.chest_res, str, sizeof(str));
-        logger.warning("PUSCH: cc=%d, %s", cc_idx, str);
-      }
     }
   }
 }

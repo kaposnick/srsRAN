@@ -23,8 +23,13 @@ private:
 	const sched_cell_params_t* cc_cfg = nullptr;
 	const char* fifo_out = "/tmp/actor_in";
 	const char* fifo_in  = "/tmp/actor_out";
+	const char* fifo_verify_action = "/tmp/verify_action";
 
-	int fd_to_ai_sched, fd_from_ai_sched;
+	int fd_to_ai_sched, fd_from_ai_sched, fd_verify_action;
+
+	typedef struct {
+		uint32_t verify_action;
+	} sched_verify_action;
 
 	typedef struct {
 		uint16_t tti;
@@ -49,11 +54,14 @@ private:
 
 	char sched_tx_buffer[sizeof(sched_ai_tx)];
 	char sched_rcv_buffer[sizeof(sched_ai_rcv)];
+	char sched_vrf_action_buffer[sizeof(sched_verify_action)];
 
 	void sched_ul_retxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
 	void sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
 	void sched_dl_retxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
 	void sched_dl_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
+	void verify_action(uint32_t verify_action);
+
 };
 }
 

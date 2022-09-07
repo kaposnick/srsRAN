@@ -605,9 +605,9 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
   tbs_info tbinfo;
 //  tbinfo.mcs       = (explicit_mcs >= 0) ? explicit_mcs : cells[enb_cc_idx].fixed_mcs_ul;
   tbinfo.mcs       = (explicit_mcs >= 0) ? explicit_mcs : data_mcs;
-  // if (tbinfo.mcs == 255) {
-	//   tbinfo.mcs = -1;
-  // }
+  if (tbinfo.mcs == 255) {
+	  tbinfo.mcs = -1;
+  }
   tbinfo.tbs_bytes = 0;
 
   bool is_newtx = h->is_empty(0);

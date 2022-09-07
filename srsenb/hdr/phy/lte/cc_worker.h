@@ -102,6 +102,9 @@ private:
   		uint32_t decoding_time;
   		char result;
   		uint32_t bits;
+      uint16_t mcs;
+      uint16_t rbs;
+      uint32_t snr;
   	} shced_ai_result;
 
   // Class to store user information
