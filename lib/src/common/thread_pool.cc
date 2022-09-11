@@ -34,6 +34,44 @@
 
 namespace srsran {
 
+standalone_worker::standalone_worker(): thread("DECODER") {}
+
+void standalone_worker::setup(uint32_t id, uint32_t prio, uint32_t mask) {
+	my_id = id;
+	if (mask == 255) {
+		start(prio);
+	} else {
+		start_cpu_mask(prio, mask);
+	}
+}
+
+void standalone_worker::stop() {
+	running = false;
+}
+
+uint32_t standalone_worker::get_id(){
+	return my_id;
+}
+
+void standalone_worker::release() {
+	finished();
+}
+
+void standalone_worker::run_thread() {
+	set_name(std::string("DECODER_") + std::to_string(my_id));
+	while (running.load(std::memory_order_relaxed)) {
+		wait_to_start();
+		if (running.load(std::memory_order_relaxed)) {
+			work_imp();
+			finished();
+		}
+	}
+}
+
+void standalone_worker::finished() {}
+
+
+
 thread_pool::worker::worker() : thread("THREAD_POOL_WORKER") {}
 
 void thread_pool::worker::setup(uint32_t id, thread_pool* parent, uint32_t prio, uint32_t mask)

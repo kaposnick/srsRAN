@@ -58,6 +58,41 @@ using namespace asn1::rrc;
 namespace srsenb {
 namespace lte {
 
+decoder_worker::decoder_worker() {}
+
+decoder_worker::~decoder_worker() {}
+
+void decoder_worker::init()
+{
+	initiated = true;
+}
+
+void decoder_worker::set_context(srsran_enb_ul_t* q_,
+		                         srsran_ul_sf_cfg_t* ul_sf_,
+								 srsran_pusch_cfg_t* cfg_,
+								 srsran_pusch_res_t* res_) {
+	q = q_;
+	ul_sf = ul_sf_;
+	cfg = cfg_;
+	res = res_;
+}
+
+void decoder_worker::wait_to_start() {
+	std::unique_lock<std::mutex> lock(mutex);
+	while (dcd_status != START_WORK) {
+		decoder_cvar.wait(lock);
+	}
+	dcd_status = WORKING;
+}
+
+void decoder_worker::work_imp() {
+	std::unique_lock<std::mutex> lock(mutex);
+	decoding_result = srsran_enb_ul_get_pusch(q, ul_sf, cfg, res);
+	decoder_result_ready = true;
+	cc_worker_cvar.notify_all();
+	dcd_status = IDLE;
+}
+
 cc_worker::cc_worker(srslog::basic_logger& logger) : logger(logger)
 {
   reset();
@@ -91,6 +126,9 @@ FILE* f;
 void cc_worker::init(phy_common* phy_, uint32_t cc_idx_, int result_fd)
 {
   phy                   = phy_;
+  decoder	            = new decoder_worker();
+//  decoder->init();
+//  decoder->dcd_status = decoder_worker::decoder_status::IDLE;
   cc_idx                = cc_idx_;
   srsran_cell_t cell    = phy_->get_cell(cc_idx);
   uint32_t      nof_prb = phy_->get_nof_prb(cc_idx);
@@ -268,6 +306,20 @@ void cc_worker::work_dl(const srsran_dl_sf_cfg_t&            dl_sf_cfg,
   }
 }
 
+void cc_worker::notify_decoder() {
+	std::unique_lock<std::mutex> lock(decoder->mutex);
+	decoder->dcd_status = decoder_worker::decoder_status::START_WORK;
+	decoder->decoder_cvar.notify_all();
+}
+
+void cc_worker::wait_decoder_result() {
+	std::unique_lock<std::mutex> lock(decoder->mutex);
+	while (!decoder->decoder_result_ready) {
+		decoder->cc_worker_cvar.wait(lock);
+	}
+	decoder->decoder_result_ready = false;
+}
+
 bool cc_worker::decode_pusch_rnti(stack_interface_phy_lte::ul_sched_grant_t& ul_grant,
                                   srsran_ul_cfg_t&                           ul_cfg,
                                   srsran_pusch_res_t&                        pusch_res)
@@ -327,10 +379,14 @@ bool cc_worker::decode_pusch_rnti(stack_interface_phy_lte::ul_sched_grant_t& ul_
   ul_cfg.pusch.softbuffers.rx = ul_grant.softbuffer_rx;
   pusch_res.data              = ul_grant.data;
   if (pusch_res.data) {
-    if (srsran_enb_ul_get_pusch(&enb_ul, &ul_sf, &ul_cfg.pusch, &pusch_res)) {
+	decoder->set_context(&enb_ul, &ul_sf, &ul_cfg.pusch, &pusch_res);
+	notify_decoder();
+	wait_decoder_result();
+
+	if (decoder->decoding_result) {
       Error("Decoding PUSCH for RNTI %x", rnti);
       return false;
-    }
+	}
   }
   // Save PHICH scheduling for this user. Each user can have just 1 PUSCH dci per TTI
   ue_db[rnti]->phich_grant.n_prb_lowest = grant.n_prb_tilde[0];

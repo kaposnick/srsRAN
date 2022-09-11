@@ -32,7 +32,6 @@
 
 namespace srsenb {
 namespace lte {
-
 class sf_worker : public srsran::thread_pool::worker
 {
 public:

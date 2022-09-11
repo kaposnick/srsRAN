@@ -46,9 +46,30 @@
 
 namespace srsran {
 
+class standalone_worker : public thread {
+public:
+  standalone_worker();
+  ~standalone_worker() = default;
+  void setup(uint32_t id, uint32_t prio = 0, uint32_t mask = 255);
+  void stop();
+  uint32_t get_id();
+  void release();
+
+protected:
+  virtual void work_imp() = 0;
+  virtual void wait_to_start() = 0;
+private:
+  uint32_t my_id = 0;
+  std::atomic<bool> running = {true};
+
+  void run_thread();
+  void finished();
+};
+
 class thread_pool
 {
 public:
+
   class worker : public thread
   {
   public:
