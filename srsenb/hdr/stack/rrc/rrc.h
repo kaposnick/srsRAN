@@ -85,6 +85,7 @@ public:
                rrc_nr_interface_rrc*  rrc_nr);
 
   void stop();
+  void update_beta_factor(uint32_t beta_factor);
   void get_metrics(rrc_metrics_t& m);
   void tti_clock();
 

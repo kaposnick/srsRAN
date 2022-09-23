@@ -247,6 +247,12 @@ int sched::ul_buffer_add(uint16_t rnti, uint32_t lcid, uint32_t bytes)
   return ue_db_access_locked(rnti, [lcid, bytes](sched_ue& ue) { ue.ul_buffer_add(lcid, bytes); });
 }
 
+void sched::update_beta_factor(uint32_t update_beta_factor) {
+	for(std::unique_ptr<carrier_sched>& c: carrier_schedulers) {
+		c->update_beta_factor(update_beta_factor);
+	}
+}
+
 int sched::ul_phr(uint16_t rnti, int phr, uint32_t ul_nof_prb)
 {
   return ue_db_access_locked(

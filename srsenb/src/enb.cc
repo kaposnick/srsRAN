@@ -46,6 +46,7 @@ enb::~enb()
 
 int enb::update_beta_factor(const uint32_t beta_factor) {
 	phy->update_beta_factor(beta_factor);
+	eutra_stack->update_beta_factor(beta_factor);
 	return 0;
 }
 

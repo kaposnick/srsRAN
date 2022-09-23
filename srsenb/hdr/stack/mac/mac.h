@@ -85,6 +85,7 @@ public:
   /******** Interface from RRC (RRC -> MAC) ****************/
   /* Provides cell configuration including SIB periodicity, etc. */
   int cell_cfg(const std::vector<sched_interface::cell_cfg_t>& cell_cfg) override;
+  void update_beta_factor(uint32_t beta_factor);
 
   /* Manages UE scheduling context */
   int ue_cfg(uint16_t rnti, const sched_interface::ue_cfg_t* cfg) override;

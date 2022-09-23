@@ -241,6 +241,10 @@ int mac::cell_cfg(const std::vector<sched_interface::cell_cfg_t>& cell_cfg_)
   return scheduler.cell_cfg(cell_config);
 }
 
+void mac::update_beta_factor(uint32_t beta_factor) {
+	scheduler.update_beta_factor(beta_factor);
+}
+
 void mac::get_metrics(mac_metrics_t& metrics)
 {
   srsran::rwlock_read_guard lock(rwlock);

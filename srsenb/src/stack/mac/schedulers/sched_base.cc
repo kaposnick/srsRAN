@@ -23,6 +23,8 @@
 
 namespace srsenb {
 
+void sched_base::sched_update_beta_factor(uint32_t beta_factor){}
+
 int get_ue_cc_idx_if_pdsch_enabled(const sched_ue& user, sf_sched* tti_sched)
 {
   // Do not allocate a user multiple times in the same tti

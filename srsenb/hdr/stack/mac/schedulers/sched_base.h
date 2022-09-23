@@ -37,6 +37,7 @@ public:
 
   virtual void sched_dl_users(sched_ue_list& ue_db, sf_sched* tti_sched) = 0;
   virtual void sched_ul_users(sched_ue_list& ue_db, sf_sched* tti_sched) = 0;
+  virtual void sched_update_beta_factor(uint32_t beta_factor);
 
 protected:
   srslog::basic_logger& logger = srslog::fetch_basic_logger("MAC");

@@ -86,6 +86,7 @@ public:
   int  pucch_info(const srsran_slot_cfg_t& slot_cfg, const pucch_info_t& pucch_info) override;
   int  pusch_info(const srsran_slot_cfg_t& slot_cfg, pusch_info_t& pusch_info) override;
   void rach_detected(const rach_info_t& rach_info) override;
+  void update_beta_factor(uint32_t beta_factor) override final;
 
   // X2 interface
 

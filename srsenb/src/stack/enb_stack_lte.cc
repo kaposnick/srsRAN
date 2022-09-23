@@ -290,6 +290,10 @@ bool enb_stack_lte::get_metrics(stack_metrics_t* metrics)
   return false;
 }
 
+void enb_stack_lte::update_beta_factor(uint32_t beta_factor) {
+	mac.update_beta_factor(beta_factor);
+}
+
 void enb_stack_lte::run_thread()
 {
   while (started.load(std::memory_order_relaxed)) {

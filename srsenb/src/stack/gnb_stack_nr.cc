@@ -217,4 +217,8 @@ void gnb_stack_nr::rach_detected(const rach_info_t& rach_info)
   mac.rach_detected(rach_info);
 }
 
+void gnb_stack_nr::update_beta_factor(uint32_t beta_factor) {
+//	mac.up
+}
+
 } // namespace srsenb

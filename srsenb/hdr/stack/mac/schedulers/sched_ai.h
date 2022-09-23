@@ -18,9 +18,11 @@ public:
 	sched_ai(const sched_cell_params_t& cell_params_, const sched_interface::sched_args_t& sched_args);
 	void sched_dl_users(sched_ue_list& ue_db, sf_sched* tti_sched) override;
 	void sched_ul_users(sched_ue_list& ue_db, sf_sched* tti_sched) override;
+	void sched_update_beta_factor(uint32_t beta_factor) override;
 
 private:
 	const sched_cell_params_t* cc_cfg = nullptr;
+	uint32_t beta_factor = -1;
 	const char* fifo_out = "/tmp/actor_in";
 	const char* fifo_in  = "/tmp/actor_out";
 	const char* fifo_verify_action = "/tmp/verify_action";
