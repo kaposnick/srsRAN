@@ -31,7 +31,8 @@ bool worker_pool::init(const phy_args_t& args, phy_common* common, srslog::sink&
 {
   // Add workers to workers pool and start threads.
   srslog::basic_levels log_level = srslog::str_to_basic_level(args.log.phy_level);
-  const char * return_in = "/tmp/return_in";
+  // const char * return_in = "/tmp/return_in";
+  const char * return_in = "/dev/null";
   mkfifo(return_in, 0666);
   result_fd = open(return_in, O_CREAT | O_WRONLY, 0666);
   if (result_fd < 0) {

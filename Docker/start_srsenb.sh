@@ -11,18 +11,22 @@ sudo /home/naposto/tools/srsRAN/bin/srsenb /home/naposto/.config/srsran/enb.conf
     --enb_files.sib_config /home/naposto/.config/srsran/sib.conf \
     --enb_files.rr_config /home/naposto/.config/srsran/rr.conf \
     --enb_files.rb_config /home/naposto/.config/srsran/rb.conf \
-    --log.phy_level=info \
-    --log.mac_level=info \
-    --expert.pusch_beta_factor=700 \
-    --scheduler.policy=time_sched_pf \
-    --log.filename=/tmp/enb.log \
+    --expert.pusch_beta_factor=1 \
+    --log.all_level=warning \
+    --log.filename='/tmp/enb.log' \
     --rf.device_name=zmq \
     --rf.device_args="fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6" 
+
+    # --scheduler.p.olicy=time_sched_ai \
+    # --rf.device_args="fail_on_disconnect=true,tx_port=tcp://*:2000,rx_port=tcp://localhost:2001,id=enb,base_srate=23.04e6"     
+    # --scheduler.pusch_max_mcs=19 \
+    # --log.phy_level=warning \
+    # --log.mac_level=warning \
+    # --log.phy_level=info \
 
 ## //    --expert.metrics_csv_enable=true \
 ##    --expert.metrics_period_secs=1.0 \
 ##    --scheduler.pdsch_mcs=25 \
-##    --scheduler.pusch_mcs=25 \
 ##    --expert.metrics_http_scrape_enable=true \
 ##    --expert.metrics_http_scrape_port=8080 \
 ##    --log.phy_level=info \

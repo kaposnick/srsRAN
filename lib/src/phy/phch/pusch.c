@@ -402,12 +402,12 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
   uint32_t n;
 
   if (q != NULL && sf_symbols != NULL && out != NULL && cfg != NULL) {
-    struct timeval t[3];
-    struct rusage  rusage[3];
-    if (cfg->meas_time_en) {
-      gettimeofday(&t[1], NULL);
-      getrusage(RUSAGE_THREAD, &rusage[1]);
-    }
+    // struct timeval t[3];
+    // struct rusage  rusage[3];
+    // if (cfg->meas_time_en) {
+    //   gettimeofday(&t[1], NULL);
+    //   getrusage(RUSAGE_THREAD, &rusage[1]);
+    // }
 //	usleep(20000);
 
     /* Limit UL modulation if not supported by the UE or disabled by higher layers */
@@ -513,21 +513,21 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
     cfg->last_O_cqi = srsran_cqi_size(&cfg->uci_cfg.cqi);
     ret             = SRSRAN_SUCCESS;
 
-    if (cfg->meas_time_en) {
-	  getrusage(RUSAGE_THREAD, &rusage[2]);
-      gettimeofday(&t[2], NULL);
-      get_time_interval(t);
-      get_cpu_time_interval(rusage);
-	    cfg->meas_cpu_time_value = (rusage[0].ru_utime.tv_usec + rusage[0].ru_stime.tv_usec) + 1e6 * (rusage[0].ru_utime.tv_sec + rusage[0].ru_stime.tv_sec);
-      cfg->meas_time_value = t[0].tv_usec + 1e6 * t[0].tv_sec;
+    // if (cfg->meas_time_en) {
+	  // getrusage(RUSAGE_THREAD, &rusage[2]);
+    //   gettimeofday(&t[2], NULL);
+    //   get_time_interval(t);
+    //   get_cpu_time_interval(rusage);
+	  //   cfg->meas_cpu_time_value = (rusage[0].ru_utime.tv_usec + rusage[0].ru_stime.tv_usec) + 1e6 * (rusage[0].ru_utime.tv_sec + rusage[0].ru_stime.tv_sec);
+    //   cfg->meas_time_value = t[0].tv_usec + 1e6 * t[0].tv_sec;
 
-      out->decode_realtime = cfg->meas_time_value;
-      out->decode_cputime  = cfg->meas_cpu_time_value;
+    //   out->decode_realtime = cfg->meas_time_value;
+    //   out->decode_cputime  = cfg->meas_cpu_time_value;
 
-      out->orig_crc = out->crc;
+    //   out->orig_crc = out->crc;
 
-     out->crc = (out->decode_realtime < 3000) ? out->crc : false;
-    }
+    //  out->crc = (out->decode_realtime < 3000) ? out->crc : false;
+    // }
   }
 
   return ret;
