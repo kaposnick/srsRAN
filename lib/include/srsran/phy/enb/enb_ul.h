@@ -85,4 +85,14 @@ SRSRAN_API int srsran_enb_ul_get_pusch(srsran_enb_ul_t*    q,
                                        srsran_pusch_cfg_t* cfg,
                                        srsran_pusch_res_t* res);
 
+SRSRAN_API void srsran_enb_ul_estimate_pusch(srsran_enb_ul_t*    q,
+        											srsran_ul_sf_cfg_t* ul_sf,
+													srsran_pusch_cfg_t* cfg,
+													srsran_pusch_res_t* res);
+
+SRSRAN_API int srsran_enb_ul_get_pusch_(srsran_enb_ul_t*    q,
+        								srsran_ul_sf_cfg_t* ul_sf,
+										srsran_pusch_cfg_t* cfg,
+										srsran_pusch_res_t* res);
+
 #endif // SRSRAN_ENB_UL_H

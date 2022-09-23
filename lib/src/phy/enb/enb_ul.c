@@ -272,6 +272,20 @@ int srsran_enb_ul_get_pucch(srsran_enb_ul_t*    q,
   return SRSRAN_SUCCESS;
 }
 
+void srsran_enb_ul_estimate_pusch(srsran_enb_ul_t*    q,
+                            srsran_ul_sf_cfg_t* ul_sf,
+                            srsran_pusch_cfg_t* cfg,
+                            srsran_pusch_res_t* res) {
+	srsran_chest_ul_estimate_pusch(&q->chest, ul_sf, cfg, q->sf_symbols, &q->chest_res);
+}
+
+int srsran_enb_ul_get_pusch_(srsran_enb_ul_t*    q,
+                            srsran_ul_sf_cfg_t* ul_sf,
+                            srsran_pusch_cfg_t* cfg,
+                            srsran_pusch_res_t* res) {
+	return srsran_pusch_decode(&q->pusch, ul_sf, cfg, &q->chest_res, q->sf_symbols, res);
+}
+
 int srsran_enb_ul_get_pusch(srsran_enb_ul_t*    q,
                             srsran_ul_sf_cfg_t* ul_sf,
                             srsran_pusch_cfg_t* cfg,

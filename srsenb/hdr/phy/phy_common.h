@@ -53,6 +53,8 @@ public:
   void reset();
   void stop();
 
+  int update_beta_factor(const uint32_t beta_factor);
+
   /**
    * TTI transmission semaphore, used for ensuring that PHY workers transmit following start order
    */

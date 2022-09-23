@@ -55,6 +55,9 @@ public:
             srsran::radio_interface_phy* radio_,
             stack_interface_phy_lte*     stack_,
             enb_time_interface*          enb_);
+
+  int update_beta_factor(const uint32_t beta_factor) override;
+
   void stop() override;
 
   std::string get_type() override { return "lte"; };

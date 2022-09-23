@@ -647,7 +647,7 @@ int main(int argc, char* argv[])
 //  metrics_screen.set_handle(enb.get());
 //
 //  // create input thread
-//  std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
+  std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
 
   srsenb::metrics_csv metrics_file(args.general.metrics_csv_filename);
   if (args.general.metrics_csv_enable) {
