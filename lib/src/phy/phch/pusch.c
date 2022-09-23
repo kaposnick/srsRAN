@@ -491,7 +491,7 @@ int srsran_pusch_decode(srsran_pusch_t*        q,
     // Decode
     ret      = srsran_ulsch_decode(&q->ul_sch, cfg, q->q, q->g, c, out->data, &out->uci);
     uint32_t sum_sqrt = 0;
-    for (uint32_t beta_cnt = 0; beta_cnt < (cfg->beta_factor - 1); beta_cnt++) {
+    for (uint32_t beta_cnt = 0; beta_cnt < (cfg->beta_factor); beta_cnt++) {
       for (uint32_t total_iters = 0; total_iters < q->ul_sch.total_iterations; total_iters++) {
     		sum_sqrt += sqrt_custom(10);
     	}
