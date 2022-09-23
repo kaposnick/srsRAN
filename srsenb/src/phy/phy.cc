@@ -142,6 +142,11 @@ int phy::init(const phy_args_t&            args,
   return SRSRAN_SUCCESS;
 }
 
+int phy::update_beta_factor(const uint32_t beta_factor) {
+	workers_common.update_beta_factor(beta_factor);
+	return 0;
+}
+
 int phy::init_lte(const phy_args_t&            args,
                   const phy_cfg_t&             cfg,
                   srsran::radio_interface_phy* radio_,

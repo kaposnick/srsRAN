@@ -20,8 +20,16 @@
  */
 
 #include "srsenb/hdr/phy/phy_ue_db.h"
+#include <iostream>
 
 using namespace srsenb;
+
+void phy_ue_db::update_beta_factor(uint32_t beta_factor) {
+  std::cout << "Updating beta " << std::endl;
+	for (auto& ue : ue_db) {
+		ue.second.cell_info[0].phy_cfg.ul_cfg.pusch.beta_factor = beta_factor;
+	}
+}
 
 void phy_ue_db::init(stack_interface_phy_lte*   stack_ptr,
                      const phy_args_t&          phy_args_,

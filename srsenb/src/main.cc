@@ -24,6 +24,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <thread>
+#include <chrono>
 #include <unistd.h>
 
 #include "srsran/common/common_helper.h"
@@ -528,8 +532,49 @@ void parse_args(all_args_t* args, int argc, char* argv[])
 //  }
 //}
 
-//static void* input_loop(metrics_stdout* metrics, srsenb::enb_command_interface* control)
-//{
+static void* input_beta_loop(srsenb::enb* enb) {
+  cout << "Entering thread loop" << endl;
+  const char* beta_fifo = "/tmp/beta_fifo";
+  string input_line;
+  cout << "Creating fifo " << endl;
+  mkfifo(beta_fifo, 0666);
+
+  cout << "Opening fifo " << endl;
+  int beta_fifo_fd = open(beta_fifo, O_RDONLY);
+  if (beta_fifo_fd < 0) { 
+    std::cerr << "Error opening " << beta_fifo << std::endl;
+  }
+  std::cout << "Listening for beta factors " << std::endl;
+  // struct pollfd pfd = {beta_fifo_fd, POLLIN, 0};
+  char buf[4];
+  while (running) {
+    size_t total_read = 0;
+    size_t total_left = 4;
+    char *buffer_ptr = buf;
+    while (total_left > 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      ssize_t current = read(beta_fifo_fd, buffer_ptr, total_left);
+      // cout << "read " << current << endl;
+      if (current < 0) {
+        perror("read");
+        break;
+      } else {
+        total_read += current;
+        total_left -= current;
+        buffer_ptr += current;
+      }
+    }
+    cout << "Buf content: " << buf << endl;
+    uint32_t beta;
+    memcpy(&beta, buf, sizeof(uint32_t));
+    cout << "Updating beta factor " << beta << std::endl;
+    enb->update_beta_factor(beta);    
+  }
+  return nullptr;
+}
+
+// static void* input_loop(metrics_stdout* metrics, srsenb::enb_command_interface* control)
+// {
 //  struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
 //  string        input_line;
 //  while (running) {
@@ -543,7 +588,7 @@ void parse_args(all_args_t* args, int argc, char* argv[])
 //      } else if (not input_line.empty()) {
 //        list<string> cmd_list;
 //        srsran::string_parse_list(input_line, ';', cmd_list);
-//
+
 //        for (const string& cmd : cmd_list) {
 //          execute_cmd(metrics, control, cmd);
 //        }
@@ -551,7 +596,7 @@ void parse_args(all_args_t* args, int argc, char* argv[])
 //    }
 //  }
 //  return nullptr;
-//}
+// }
 
 /// Adjusts the input value in args from kbytes to bytes.
 static size_t fixup_log_file_maxsize(int x)
@@ -647,7 +692,9 @@ int main(int argc, char* argv[])
 //  metrics_screen.set_handle(enb.get());
 //
 //  // create input thread
-//  std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
+  // std::thread input(&input_loop, &metrics_screen, (enb_command_interface*)enb.get());
+  cout << "Creating input thread " << endl;
+  std::thread input(&input_beta_loop, enb.get());
 
   srsenb::metrics_csv metrics_file(args.general.metrics_csv_filename);
   if (args.general.metrics_csv_enable) {
@@ -694,7 +741,7 @@ int main(int argc, char* argv[])
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-//  input.join();
+  input.join();
   enb->stop();
   cout << "---  exiting  ---" << endl;
 

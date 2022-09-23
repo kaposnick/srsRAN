@@ -141,6 +141,8 @@ public:
 
   int init(const all_args_t& args_);
 
+  int update_beta_factor(const uint32_t beta_factor);
+
   void stop();
 
   void start_plot();

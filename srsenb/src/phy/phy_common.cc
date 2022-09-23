@@ -40,6 +40,12 @@ void phy_common::reset()
   }
 }
 
+int phy_common::update_beta_factor(const uint32_t beta_factor) {
+	params.pusch_beta_factor = beta_factor;
+	ue_db.update_beta_factor(beta_factor);
+	return 0;
+}
+
 bool phy_common::init(const phy_cell_cfg_list_t&    cell_list_,
                       const phy_cell_cfg_list_nr_t& cell_list_nr_,
                       srsran::radio_interface_phy*  radio_h_,
