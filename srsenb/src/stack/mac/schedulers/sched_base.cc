@@ -20,10 +20,13 @@
  */
 
 #include "srsenb/hdr/stack/mac/schedulers/sched_base.h"
+#include <iostream>
 
 namespace srsenb {
 
-void sched_base::sched_update_beta_factor(uint32_t beta_factor){}
+void sched_base::sched_update_beta_factor(uint32_t beta_factor){
+  std::cout << "Sched base updating beta factor " << beta_factor << std::endl;
+}
 
 int get_ue_cc_idx_if_pdsch_enabled(const sched_ue& user, sf_sched* tti_sched)
 {

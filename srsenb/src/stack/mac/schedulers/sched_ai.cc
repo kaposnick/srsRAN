@@ -32,6 +32,7 @@ sched_ai::sched_ai(const sched_cell_params_t& cell_params_, const sched_interfac
 }
 
 void sched_ai::sched_update_beta_factor(uint32_t beta_factor) {
+	std::cout << "SCHED AI Updating beta factor " << beta_factor << std::endl;
 	this->beta_factor = beta_factor;
 }
 

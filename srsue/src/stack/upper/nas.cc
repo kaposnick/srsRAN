@@ -90,7 +90,7 @@ int nas::init(usim_interface_nas* usim_, rrc_interface_nas* rrc_, gw_interface_n
 
   cfg = cfg_;
 
-  if ((read_ctxt_file(&ctxt, &ctxt_base))) {
+  if (false && (read_ctxt_file(&ctxt, &ctxt_base))) {
     usim->generate_nas_keys(
         ctxt.k_asme, ctxt_base.k_nas_enc, ctxt_base.k_nas_int, ctxt_base.cipher_algo, ctxt_base.integ_algo);
     logger.debug(ctxt_base.k_nas_enc, 32, "NAS encryption key - k_nas_enc");

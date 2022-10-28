@@ -25,7 +25,7 @@
 using namespace srsenb;
 
 void phy_ue_db::update_beta_factor(uint32_t beta_factor) {
-  std::cout << "Updating beta " << std::endl;
+  std::cout << "PHY_UE_DB Updating beta " << std::endl;
 	for (auto& ue : ue_db) {
 		ue.second.cell_info[0].phy_cfg.ul_cfg.pusch.beta_factor = beta_factor;
 	}
