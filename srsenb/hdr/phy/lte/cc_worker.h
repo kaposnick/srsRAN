@@ -32,38 +32,6 @@
 namespace srsenb {
 namespace lte {
 
-class decoder_worker : public srsran::standalone_worker {
-  public:
-//  	decoder_worker(srslog::basic_logger& logger) : logger(logger) {};
-  	decoder_worker();
-  	~decoder_worker();
-  	void init();
-  	void set_context(srsran_enb_ul_t* q_,
-  			         srsran_ul_sf_cfg_t* ul_sf_,
-					 srsran_pusch_cfg_t* cfg_,
-					 srsran_pusch_res_t* res_);
-  	int            decoding_result = -1;
-  	std::condition_variable decoder_cvar = {};
-  	typedef enum { IDLE, START_WORK, WORKING } decoder_status;
-  	decoder_status dcd_status = IDLE;
-  	bool decoder_result_ready = false;
-  	std::condition_variable cc_worker_cvar = {};
-  	std::mutex mutex = {};
-  private:
-  	void work_imp() final;
-  	void wait_to_start() final;
-
-//  	srslog::basic_logger& logger;
-  	bool initiated = false;
-  	bool running = false;
-
-  	srsran_enb_ul_t* q = nullptr;
-  	srsran_ul_sf_cfg_t* ul_sf = nullptr;
-  	srsran_pusch_cfg_t* cfg = nullptr;
-  	srsran_pusch_res_t* res = nullptr;
-
-};
-
 class cc_worker
 {
 public:
@@ -101,16 +69,14 @@ private:
 
   int  encode_pdsch(stack_interface_phy_lte::dl_sched_grant_t* grants, uint32_t nof_grants);
   int  encode_pmch(stack_interface_phy_lte::dl_sched_grant_t* grant, srsran_mbsfn_cfg_t* mbsfn_cfg);
-  void decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, uint32_t nof_pusch);
   bool decode_pusch_rnti(stack_interface_phy_lte::ul_sched_grant_t& ul_grant,
                          srsran_ul_cfg_t&                           ul_cfg,
                          srsran_pusch_res_t&                        pusch_res);
+  void decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, uint32_t nof_pusch);
   int  encode_phich(stack_interface_phy_lte::ul_sched_ack_t* acks, uint32_t nof_acks);
   int  encode_pdcch_dl(stack_interface_phy_lte::dl_sched_grant_t* grants, uint32_t nof_grants);
   int  encode_pdcch_ul(stack_interface_phy_lte::ul_sched_grant_t* grants, uint32_t nof_grants);
   int  decode_pucch();
-  void notify_decoder();
-  void wait_decoder_result();
 
   /* Common objects */
   srslog::basic_logger& logger;
@@ -169,9 +135,6 @@ private:
   // Each worker keeps a local copy of the user database. Uses more memory but more efficient to manage concurrency
   std::map<uint16_t, ue*> ue_db;
   std::mutex              mutex;
-
-
-  decoder_worker* decoder = nullptr;
 };
 
 } // namespace lte
