@@ -94,7 +94,6 @@ typedef struct SRSRAN_API {
   uint32_t           cb_K1, cb_K2;
   uint32_t			 decode_realtime; // in us
   uint32_t			 decode_cputime;  // in us
-  uint32_t       decode_rt_cbs;
   float              evm;
   float              epre_dbfs;
 } srsran_pusch_res_t;

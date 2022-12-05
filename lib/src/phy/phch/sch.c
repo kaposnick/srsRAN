@@ -369,6 +369,25 @@ static int encode_tb(srsran_sch_t*           q,
   return encode_tb_off(q, soft_buffer, cb_segm, Qm, rv, nof_e_bits, data, e_bits, 0);
 }
 
+
+long double sqrt_custom(const int number) {
+	static const long double precision = 1.0e-12L;
+	long double n = (long double)number;
+	long double lo = 1.0L;
+	long double hi = n;
+	long double rt = 0;
+	while ((hi-lo) > precision) {
+		long double g = (lo + hi) / 2.0L;
+		if ( (g*g) > n) {
+			hi = g;
+		} else {
+			lo = g;
+		}
+		rt = (lo + hi) / 2.0L;
+	}
+	return rt;
+}
+
 bool decode_tb_cb(srsran_sch_t*           q,
                   srsran_softbuffer_rx_t* softbuffer,
                   srsran_cbsegm_t*        cb_segm,
@@ -376,7 +395,9 @@ bool decode_tb_cb(srsran_sch_t*           q,
                   uint32_t                rv,
                   uint32_t                nof_e_bits,
                   void*                   e_bits,
-                  uint8_t*                data)
+                  uint8_t*                data, 
+                  bool                    add_beta_delay,
+                  uint16_t                beta_delay)
 {
   int8_t*  e_bits_b = e_bits;
   int16_t* e_bits_s = e_bits;
@@ -392,10 +413,8 @@ bool decode_tb_cb(srsran_sch_t*           q,
   q->cb_K1 = cb_segm->K1;
   q->cb_K2 = cb_segm->K2;
   q->no_cbs_stored = q->no_cbs_ok = q->no_cbs_ko = 0;
-  q->cb_dec_time = 0;
+  q->tb_dec_time = 0;
 
-  struct timeval t[3];
-  gettimeofday(&t[1], NULL);
 
   for (int cb_idx = 0; cb_idx < cb_segm->C; cb_idx++) {
     /* Do not process blocks with CRC Ok */
@@ -434,11 +453,21 @@ bool decode_tb_cb(srsran_sch_t*           q,
       bool     early_stop = false;
       uint32_t cb_noi     = 0;
       do {
+        struct timeval t[3];
         if (q->llr_is_8bit) {
-          srsran_tdec_iteration_8bit(&q->decoder, (int8_t*)softbuffer->buffer_f[cb_idx], &data[cb_idx * rlen / 8]);
+          srsran_tdec_iteration_8bit(&q->decoder, (int8_t*)softbuffer->buffer_f[cb_idx], &data[cb_idx * rlen / 8], t);
         } else {
-          srsran_tdec_iteration(&q->decoder, softbuffer->buffer_f[cb_idx], &data[cb_idx * rlen / 8]);
+          srsran_tdec_iteration(&q->decoder, softbuffer->buffer_f[cb_idx], &data[cb_idx * rlen / 8], t);
         }
+        if (add_beta_delay) {
+          uint32_t sum_sqrt = 0;
+          for (uint32_t beta_cnt = 0; beta_cnt < beta_delay; beta_cnt++) {
+              sum_sqrt += sqrt_custom(10);
+          }
+        }
+        gettimeofday(&t[2], NULL);
+        get_time_interval(t);
+        q->tb_dec_time += t[0].tv_usec + 1e6 * t[0].tv_sec;
         q->avg_iterations++;
         q->total_iterations++;
         cb_noi++;
@@ -507,9 +536,6 @@ bool decode_tb_cb(srsran_sch_t*           q,
     }
   }
 
-  gettimeofday(&t[2], NULL);
-  get_time_interval(t);
-  q->cb_dec_time = t[0].tv_usec + 1e6 * t[0].tv_sec;
   if (cb_segm->C == q->no_cbs_stored) {
     q->avg_iterations = 0;
   } else {
@@ -539,7 +565,9 @@ static int decode_tb(srsran_sch_t*           q,
                      uint32_t                rv,
                      uint32_t                nof_e_bits,
                      int16_t*                e_bits,
-                     uint8_t*                data)
+                     uint8_t*                data, 
+                     bool                    add_beta_delay, 
+                     uint16_t                beta_delay)
 {
   // Check inputs
   if (q == NULL || data == NULL || softbuffer == NULL || e_bits == NULL || cb_segm == NULL || Qm == 0) {
@@ -571,7 +599,7 @@ static int decode_tb(srsran_sch_t*           q,
   }
 
   // Process Codeblocks
-  bool cb_crc_ok = decode_tb_cb(q, softbuffer, cb_segm, Qm, rv, nof_e_bits, e_bits, data);
+  bool cb_crc_ok = decode_tb_cb(q, softbuffer, cb_segm, Qm, rv, nof_e_bits, e_bits, data, add_beta_delay, beta_delay);
 
   // If any of the CBs CRC is KO
   if (!cb_crc_ok) {
@@ -631,7 +659,7 @@ int srsran_dlsch_decode2(srsran_sch_t*       q,
                    cfg->grant.tb[tb_idx].rv,
                    cfg->grant.tb[tb_idx].nof_bits,
                    e_bits,
-                   data);
+                   data, false, 0);
 }
 
 /**
@@ -1151,7 +1179,8 @@ int srsran_ulsch_decode(srsran_sch_t*       q,
                         int16_t*            g_bits,
                         uint8_t*            c_seq,
                         uint8_t*            data,
-                        srsran_uci_value_t* uci_data)
+                        srsran_uci_value_t* uci_data,
+                        uint16_t            beta_delay)
 {
   int ret = SRSRAN_ERROR_INVALID_INPUTS;
 
@@ -1213,7 +1242,7 @@ int srsran_ulsch_decode(srsran_sch_t*       q,
   // Decode ULSCH
   if (cb_segm.tbs > 0) {
     uint32_t G = nb_q / Qm - Q_prime_ri - Q_prime_cqi;
-    ret        = decode_tb(q, cfg->softbuffers.rx, &cb_segm, Qm, cfg->grant.tb.rv, G * Qm, &g_bits[e_offset], data);
+    ret        = decode_tb(q, cfg->softbuffers.rx, &cb_segm, Qm, cfg->grant.tb.rv, G * Qm, &g_bits[e_offset], data, true, beta_delay);
   }
   return ret;
 }

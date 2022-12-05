@@ -55,6 +55,7 @@ typedef struct SRSRAN_API {
   uint32_t max_iterations;
   float    avg_iterations;
   uint32_t total_iterations;
+  uint32_t tb_dec_time;
 
   /* CB */
   uint32_t no_cbs;
@@ -62,7 +63,6 @@ typedef struct SRSRAN_API {
   uint32_t no_cbs_stored;
   uint32_t no_cbs_ok;
   uint32_t no_cbs_ko;
-  uint32_t cb_dec_time;
 
   bool llr_is_8bit;
 
@@ -122,7 +122,8 @@ SRSRAN_API int srsran_ulsch_decode(srsran_sch_t*       q,
                                    int16_t*            g_bits,
                                    uint8_t*            c_seq,
                                    uint8_t*            data,
-                                   srsran_uci_value_t* uci_data);
+                                   srsran_uci_value_t* uci_data, 
+                                   uint16_t            beta_delay);
 
 SRSRAN_API float srsran_sch_beta_cqi(uint32_t I_cqi);
 

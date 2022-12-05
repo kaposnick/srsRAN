@@ -37,6 +37,7 @@
 #include "srsran/config.h"
 #include "srsran/phy/fec/cbsegm.h"
 #include "srsran/phy/fec/turbo/tc_interl.h"
+#include <sys/time.h>
 
 #define SRSRAN_TCOD_RATE 3
 #define SRSRAN_TCOD_TOTALTAIL 12
@@ -110,12 +111,12 @@ SRSRAN_API uint32_t srsran_tdec_autoimp_get_subblocks(uint32_t long_cb);
 
 SRSRAN_API uint32_t srsran_tdec_autoimp_get_subblocks_8bit(uint32_t long_cb);
 
-SRSRAN_API void srsran_tdec_iteration(srsran_tdec_t* h, int16_t* input, uint8_t* output);
+SRSRAN_API void srsran_tdec_iteration(srsran_tdec_t* h, int16_t* input, uint8_t* output, struct timeval t[]);
 
 SRSRAN_API int
 srsran_tdec_run_all(srsran_tdec_t* h, int16_t* input, uint8_t* output, uint32_t nof_iterations, uint32_t long_cb);
 
-SRSRAN_API void srsran_tdec_iteration_8bit(srsran_tdec_t* h, int8_t* input, uint8_t* output);
+SRSRAN_API void srsran_tdec_iteration_8bit(srsran_tdec_t* h, int8_t* input, uint8_t* output, struct timeval t[]);
 
 SRSRAN_API int
 srsran_tdec_run_all_8bit(srsran_tdec_t* h, int8_t* input, uint8_t* output, uint32_t nof_iterations, uint32_t long_cb);

@@ -455,7 +455,7 @@ static void convert_16_to_8(int16_t* in, int8_t* out, uint32_t len)
   }
 }
 
-static void tdec_iteration_8(srsran_tdec_t* h, int8_t* input)
+static void tdec_iteration_8(srsran_tdec_t* h, int8_t* input, struct timeval t[])
 {
   // Select decoder if in auto mode
   if (h->dec_type == SRSRAN_TDEC_AUTO) {
@@ -477,13 +477,19 @@ static void tdec_iteration_8(srsran_tdec_t* h, int8_t* input)
     if (!h->n_iter) {
       convert_8_to_16(input, h->input_conv, 3 * h->current_long_cb + 12);
     }
+    if (t != NULL) {
+      gettimeofday(&t[1], NULL);
+    }
     run_tdec_iteration_16bit(h, h->input_conv);
   } else {
+    if (t != NULL) {
+      gettimeofday(&t[1], NULL);
+    }
     run_tdec_iteration_8bit(h, input);
   }
 }
 
-static void tdec_iteration_16(srsran_tdec_t* h, int16_t* input)
+static void tdec_iteration_16(srsran_tdec_t* h, int16_t* input, struct timeval t[])
 {
   // Select decoder if in auto mode
   if (h->dec_type == SRSRAN_TDEC_AUTO) {
@@ -500,8 +506,15 @@ static void tdec_iteration_16(srsran_tdec_t* h, int16_t* input)
     if (!h->n_iter) {
       convert_16_to_8(input, h->input_conv, 3 * h->current_long_cb + 12);
     }
+
+    if (t != NULL) {
+      gettimeofday(&t[1], NULL);
+    }
     run_tdec_iteration_8bit(h, h->input_conv);
   } else {
+    if (t != NULL) {
+      gettimeofday(&t[1], NULL);
+    }
     run_tdec_iteration_16bit(h, input);
   }
 }
@@ -524,10 +537,10 @@ int srsran_tdec_new_cb(srsran_tdec_t* h, uint32_t long_cb)
   return 0;
 }
 
-void srsran_tdec_iteration(srsran_tdec_t* h, int16_t* input, uint8_t* output)
+void srsran_tdec_iteration(srsran_tdec_t* h, int16_t* input, uint8_t* output, struct timeval t[])
 {
   if (h->current_cbidx >= 0) {
-    tdec_iteration_16(h, input);
+    tdec_iteration_16(h, input, t);
     tdec_decision_byte(h, output);
   }
 }
@@ -540,7 +553,7 @@ int srsran_tdec_run_all(srsran_tdec_t* h, int16_t* input, uint8_t* output, uint3
   }
 
   do {
-    tdec_iteration_16(h, input);
+    tdec_iteration_16(h, input, NULL);
   } while (h->n_iter < nof_iterations);
 
   tdec_decision_byte(h, output);
@@ -548,10 +561,10 @@ int srsran_tdec_run_all(srsran_tdec_t* h, int16_t* input, uint8_t* output, uint3
   return SRSRAN_SUCCESS;
 }
 
-void srsran_tdec_iteration_8bit(srsran_tdec_t* h, int8_t* input, uint8_t* output)
+void srsran_tdec_iteration_8bit(srsran_tdec_t* h, int8_t* input, uint8_t* output, struct timeval t[])
 {
   if (h->current_cbidx >= 0) {
-    tdec_iteration_8(h, input);
+    tdec_iteration_8(h, input, t);
     tdec_decision_byte(h, output);
   }
 }
@@ -568,7 +581,7 @@ int srsran_tdec_run_all_8bit(srsran_tdec_t* h,
   }
 
   do {
-    tdec_iteration_8(h, input);
+    tdec_iteration_8(h, input, NULL);
   } while (h->n_iter < nof_iterations);
 
   tdec_decision_byte(h, output);
