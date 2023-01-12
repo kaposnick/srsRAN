@@ -395,7 +395,7 @@ int sched_sim_base::apply_tti_events(sim_ue_ctxt_t& ue_ctxt, const ue_tti_events
       }
 
       // update scheduler
-      if (sched_ptr->ul_crc_info(events.tti_rx.to_uint(), ue_ctxt.rnti, enb_cc_idx, cc_feedback.ul_ack) < 0) {
+      if (sched_ptr->ul_crc_info(events.tti_rx.to_uint(), ue_ctxt.rnti, enb_cc_idx, cc_feedback.ul_ack, cc_feedback.ul_ack) < 0) {
         logger.error("The ACKed UL Harq pid=%d does not exist.", cc_feedback.ul_pid);
         error_counter++;
       }

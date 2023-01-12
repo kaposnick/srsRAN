@@ -208,7 +208,7 @@ int sched_ue_cell::set_dl_sb_cqi(tti_point tti_rx, uint32_t sb_idx, uint32_t dl_
   return SRSRAN_SUCCESS;
 }
 
-int sched_ue_cell::set_ul_crc(tti_point tti_rx, bool crc_res)
+int sched_ue_cell::set_ul_crc(tti_point tti_rx, bool crc_res, bool orig_crc_res)
 {
   CHECK_VALID_CC("UL CRC");
 
@@ -220,7 +220,7 @@ int sched_ue_cell::set_ul_crc(tti_point tti_rx, bool crc_res)
       // Note: Avoid keeping increasing the snr delta offset, if MCS is already is at its limit
       float delta_dec_eff = mcs <= 0 ? 0 : ul_delta_dec;
       float delta_inc_eff = mcs >= (int)max_mcs_ul ? 0 : ul_delta_inc;
-      ul_snr_coeff += crc_res ? delta_inc_eff : -delta_dec_eff;
+      ul_snr_coeff += orig_crc_res ? delta_inc_eff : -delta_dec_eff;
       ul_snr_coeff = std::min(std::max(-max_snr_coeff, ul_snr_coeff), max_snr_coeff);
       logger.info("SCHED: UL adaptive link: rnti=0x%x, snr_estim=%.2f, last_mcs=%d, snr_offset=%f",
                   rnti,

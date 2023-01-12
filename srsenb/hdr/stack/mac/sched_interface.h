@@ -305,7 +305,7 @@ public:
   virtual int dl_sb_cqi_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t sb_idx, uint32_t cqi) = 0;
 
   /* UL information */
-  virtual int ul_crc_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, bool crc)                       = 0;
+  virtual int ul_crc_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, bool crc, bool orig_crc)                       = 0;
   virtual int ul_sr_info(uint32_t tti, uint16_t rnti)                                                       = 0;
   virtual int ul_bsr(uint16_t rnti, uint32_t lcg_id, uint32_t bsr)                                          = 0;
   virtual int ul_phr(uint16_t rnti, int phr, uint32_t ul_nof_prb)                                           = 0;

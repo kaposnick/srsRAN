@@ -132,10 +132,6 @@ void sched_ai::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t
 	if (pending_data == 0) {
 		return;
 	}
-//	if (tti_sched->get_tti_tx_ul().to_uint() % 4 != 0) {
-//		// schedule only in one HARQ
-//		return;
-//	}
 
 	sched_ai_tx ai_tx = {
 			(uint16_t) tti_sched->get_tti_tx_ul().to_uint(),

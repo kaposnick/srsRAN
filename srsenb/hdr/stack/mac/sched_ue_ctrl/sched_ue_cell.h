@@ -60,7 +60,7 @@ struct sched_ue_cell {
   uint32_t get_aggr_level(uint32_t nof_bits) const;
 
   int set_ack_info(tti_point tti_rx, uint32_t tb_idx, bool ack);
-  int set_ul_crc(tti_point tti_rx, bool crc_res);
+  int set_ul_crc(tti_point tti_rx, bool crc_res, bool orig_crc_res);
   int set_ul_snr(tti_point tti_rx, float ul_snr, float ul_noise, uint32_t ul_ch_code);
 
   const uint16_t rnti;

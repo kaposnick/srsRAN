@@ -257,9 +257,9 @@ int sched_ue::set_ack_info(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t tb_id
   return cells[enb_cc_idx].set_ack_info(tti_rx, tb_idx, ack);
 }
 
-void sched_ue::set_ul_crc(tti_point tti_rx, uint32_t enb_cc_idx, bool crc_res)
+void sched_ue::set_ul_crc(tti_point tti_rx, uint32_t enb_cc_idx, bool crc_res, bool orig_crc_res)
 {
-  cells[enb_cc_idx].set_ul_crc(tti_rx, crc_res);
+  cells[enb_cc_idx].set_ul_crc(tti_rx, crc_res, orig_crc_res);
 }
 
 void sched_ue::set_dl_ri(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t ri)
@@ -617,9 +617,9 @@ int sched_ue::generate_format0(sched_interface::ul_sched_data_t* data,
 
     if (tbinfo.mcs >= 0) {
       tbinfo.tbs_bytes = get_tbs_bytes(tbinfo.mcs, alloc.length(), false, true);
-      logger.warning("NEW TX: FIXED MCS");
+      // logger.warning("NEW TX: FIXED MCS");
     } else {
-      logger.warning("NEW TX: Dynamic MCS");
+      // logger.warning("NEW TX: Dynamic MCS");
       // dynamic mcs
       uint32_t req_bytes = get_pending_ul_new_data(tti_tx_ul, enb_cc_idx);
       uint32_t N_srs     = 0;

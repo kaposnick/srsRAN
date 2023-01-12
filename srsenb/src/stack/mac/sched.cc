@@ -194,10 +194,10 @@ int sched::dl_ack_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, uint
   return ret;
 }
 
-int sched::ul_crc_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, bool crc)
+int sched::ul_crc_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, bool crc, bool orig_crc)
 {
   return ue_db_access_locked(
-      rnti, [tti_rx, enb_cc_idx, crc](sched_ue& ue) { ue.set_ul_crc(tti_point{tti_rx}, enb_cc_idx, crc); });
+      rnti, [tti_rx, enb_cc_idx, crc, orig_crc](sched_ue& ue) { ue.set_ul_crc(tti_point{tti_rx}, enb_cc_idx, crc, orig_crc); });
 }
 
 int sched::dl_ri_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t ri_value)

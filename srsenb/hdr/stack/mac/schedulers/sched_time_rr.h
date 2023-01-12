@@ -23,6 +23,7 @@
 #define SRSENB_SCHEDULER_METRIC_H
 
 #include "sched_base.h"
+#include "sched_ai.h"
 
 namespace srsenb {
 
@@ -34,8 +35,30 @@ public:
   sched_time_rr(const sched_cell_params_t& cell_params_, const sched_interface::sched_args_t& sched_args);
   void sched_dl_users(sched_ue_list& ue_db, sf_sched* tti_sched) override;
   void sched_ul_users(sched_ue_list& ue_db, sf_sched* tti_sched) override;
+  void sched_update_beta_factor(uint32_t beta_factor) override;
 
 private:
+  uint32_t beta_factor = -1;
+  const char* fifo_out = "/tmp/actor_in";
+	const char* fifo_in  = "/tmp/actor_out";
+  int fd_to_ai_sched, fd_from_ai_sched;
+
+  typedef struct {
+		uint16_t tti;
+		uint16_t rnti;
+		uint32_t bytes;
+		int32_t noise;
+		uint16_t beta;
+	} sched_ai_tx;
+
+  typedef struct {
+		uint8_t mcs;
+		uint8_t num_rbs;
+	} sched_ai_rcv;
+
+  char sched_tx_buffer[sizeof(sched_ai_tx)];
+	char sched_rcv_buffer[sizeof(sched_ai_rcv)];
+
   void sched_dl_retxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
   void sched_dl_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
   void sched_ul_retxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);

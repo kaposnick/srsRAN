@@ -317,7 +317,7 @@ int mac::crc_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, uint32_t 
   rrc_h->set_radiolink_ul_state(rnti, crc);
 
   // Scheduler uses eNB's CC mapping
-  return scheduler.ul_crc_info(tti_rx, rnti, enb_cc_idx, crc);
+  return scheduler.ul_crc_info(tti_rx, rnti, enb_cc_idx, crc, orig_crc);
 }
 
 int mac::push_pdu(uint32_t tti_rx,

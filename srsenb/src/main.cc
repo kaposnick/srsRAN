@@ -565,10 +565,10 @@ static void* input_beta_loop(srsenb::enb* enb) {
       }
     }
     // cout << "Buf content: " << buf << endl;
-    uint32_t beta;
-    memcpy(&beta, buf, sizeof(uint32_t));
+    int32_t beta;
+    memcpy(&beta, buf, sizeof(int32_t));
     // cout << "Updating beta factor " << beta << std::endl;
-    if (beta <= 1500) {
+    if (beta <= 2500) {
       enb->update_beta_factor(beta);
     }
   }

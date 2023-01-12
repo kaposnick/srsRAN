@@ -71,7 +71,7 @@ public:
   int dl_pmi_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t pmi_value) final;
   int dl_cqi_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t cqi_value) final;
   int dl_sb_cqi_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t sb_idx, uint32_t cqi_value) final;
-  int ul_crc_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, bool crc) final;
+  int ul_crc_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, bool crc, bool orig_crc) final;
   int ul_sr_info(uint32_t tti, uint16_t rnti) override;
   int ul_bsr(uint16_t rnti, uint32_t lcg_id, uint32_t bsr) final;
   int ul_phr(uint16_t rnti, int phr, uint32_t ul_nof_prb) final;
