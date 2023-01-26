@@ -218,6 +218,8 @@ void cc_worker::work_ul(const srsran_ul_sf_cfg_t& ul_sf_cfg, stack_interface_phy
   logger.set_context(ul_sf.tti);
 
   // Process UL signal
+  // float received_power = srsran_vec_avg_power_cf(enb_ul.in_buffer, SRSRAN_SF_LEN_PRB(enb_ul.cell.nof_prb));
+  // logger.error("Before fft received power: %.4f", received_power);
   srsran_enb_ul_fft(&enb_ul);
 
   // Decode pending UL grants for the tti they were scheduled
@@ -338,11 +340,12 @@ bool cc_worker::decode_pusch_rnti(stack_interface_phy_lte::ul_sched_grant_t& ul_
 
   float snr_db = enb_ul.chest_res.snr_db;
   float noise_dbm = enb_ul.chest_res.noise_estimate_dbm;
+  float snr_custom_db = enb_ul.chest_res.snr_db_custom;
 
   // Notify MAC of RL status
   if (snr_db >= PUSCH_RL_SNR_DB_TH) {
     // Notify MAC UL channel quality
-    phy->stack->snr_info(ul_sf.tti, rnti, cc_idx, snr_db, noise_dbm, mac_interface_phy_lte::PUSCH);
+    phy->stack->snr_info(ul_sf.tti, rnti, cc_idx, snr_db, noise_dbm, snr_custom_db, mac_interface_phy_lte::PUSCH);
 
     // Notify MAC of Time Alignment only if it enabled and valid measurement, ignore value otherwise
     if (ul_cfg.pusch.meas_ta_en and not std::isnan(enb_ul.chest_res.ta_us) and not std::isinf(enb_ul.chest_res.ta_us)) {
@@ -396,8 +399,10 @@ void cc_worker::decode_pusch(stack_interface_phy_lte::ul_sched_grant_t* grants, 
 			  (char) pusch_res.orig_crc,
 			  (uint32_t) ul_cfg.pusch.grant.tb.tbs,
         (uint16_t) ul_cfg.pusch.grant.tb.mcs_idx,
-        (uint16_t) ul_grant.rbs,
-        (uint32_t) (enb_ul.chest_res.snr_db * 1000.0f)
+        (uint16_t) ul_cfg.pusch.grant.L_prb,
+        (uint32_t) (enb_ul.chest_res.snr_db * 1000.0f),
+        (uint32_t) (enb_ul.chest_res.noise_estimate_dbm * 1000.0f),
+        (uint32_t) (enb_ul.chest_res.snr_db_custom * 1000.0f)
       };
 
       if (!ul_grant.is_mgs3 && ul_grant.dci.tb.rv == 0) {
@@ -453,14 +458,14 @@ int cc_worker::decode_pucch()
 
         if (pucch_res.detected and pucch_res.ta_valid) {
           phy->stack->ta_info(tti_rx, rnti, pucch_res.ta_us);
-          phy->stack->snr_info(tti_rx, rnti, cc_idx, pucch_res.snr_db, pucch_res.noise_dbm, mac_interface_phy_lte::PUCCH);
+          phy->stack->snr_info(tti_rx, rnti, cc_idx, pucch_res.snr_db, pucch_res.noise_dbm, 5, mac_interface_phy_lte::PUCCH);
         }
 
         // Logging
-        if (logger.info.enabled()) {
+        if (logger.warning.enabled()) {
           char str[512];
           srsran_pucch_rx_info(&ul_cfg.pucch, &pucch_res, str, sizeof(str));
-          logger.info("PUCCH: cc=%d; %s", cc_idx, str);
+          logger.warning("PUCCH: cc=%d; %s", cc_idx, str);
         }
 
         // Save metrics

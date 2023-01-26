@@ -22,7 +22,7 @@ public:
 
 private:
 	const sched_cell_params_t* cc_cfg = nullptr;
-	uint32_t beta_factor = -1;
+	uint32_t beta_factor = 0;
 	const char* fifo_out = "/tmp/actor_in";
 	const char* fifo_in  = "/tmp/actor_out";
 	const char* fifo_verify_action = "/tmp/verify_action";

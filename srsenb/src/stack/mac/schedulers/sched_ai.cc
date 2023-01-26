@@ -137,7 +137,7 @@ void sched_ai::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t
 			(uint16_t) tti_sched->get_tti_tx_ul().to_uint(),
 			(uint16_t) user.get_rnti(),
 			(uint32_t) pending_data,
-			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_estim(),
+			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_custom_estim(),
 	        (uint16_t) this->beta_factor };
 	memcpy(sched_tx_buffer, &ai_tx, sizeof(ai_tx));
 	int bytes_write = write(fd_to_ai_sched, sched_tx_buffer, sizeof(sched_tx_buffer)); 

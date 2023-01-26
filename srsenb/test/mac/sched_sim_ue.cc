@@ -406,7 +406,7 @@ int sched_sim_base::apply_tti_events(sim_ue_ctxt_t& ue_ctxt, const ue_tti_events
     }
 
     if (cc_feedback.ul_snr >= 0) {
-      sched_ptr->ul_snr_info(events.tti_rx.to_uint(), ue_ctxt.rnti, enb_cc_idx, cc_feedback.ul_snr,0,  0);
+      sched_ptr->ul_snr_info(events.tti_rx.to_uint(), ue_ctxt.rnti, enb_cc_idx, cc_feedback.ul_snr,0,  0, 0);
     }
   }
 

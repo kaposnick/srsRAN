@@ -231,10 +231,10 @@ int sched::dl_rach_info(uint32_t enb_cc_idx, dl_sched_rar_info_t rar_info)
   return carrier_schedulers[enb_cc_idx]->dl_rach_info(rar_info);
 }
 
-int sched::ul_snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise, uint32_t ul_ch_code)
+int sched::ul_snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise, float snr_custom, uint32_t ul_ch_code)
 {
   return ue_db_access_locked(rnti,
-                             [&](sched_ue& ue) { ue.set_ul_snr(tti_point{tti_rx}, enb_cc_idx, snr, noise, ul_ch_code); });
+                             [&](sched_ue& ue) { ue.set_ul_snr(tti_point{tti_rx}, enb_cc_idx, snr, noise, snr_custom, ul_ch_code); });
 }
 
 int sched::ul_bsr(uint16_t rnti, uint32_t lcg_id, uint32_t bsr)

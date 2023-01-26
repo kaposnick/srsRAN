@@ -41,6 +41,12 @@ sched_time_rr::sched_time_rr(const sched_cell_params_t& cell_params_, const sche
 		std::cerr << "Error opening " << fd_to_ai_sched << std::endl;
 	}
 
+  mkfifo(fifo_verify_action, 0666);
+	fd_verify_action = open(fifo_verify_action, O_CREAT | O_WRONLY, 0666);
+	if (fd_verify_action < 0) {
+		std::cerr << "Error opening " << fd_verify_action << std::endl;
+	}
+
 	mkfifo(fifo_in, 0666);
 	fd_from_ai_sched = open(fifo_in, O_RDONLY);
 	if (fd_from_ai_sched < 0) {
@@ -184,17 +190,35 @@ void sched_time_rr::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, s
 	  if (bytes_read < 0) {
 		  std::cerr << "pipe read error" << std::endl;
 	  }
+    // uint32_t possible_values[] = {1, 2, 3, 4, 5, 6, 8, 9, 
+    //                   10, 12, 15, 16, 18, 
+    //                   20, 24, 25, 27, 
+    //                   30, 32, 36, 40, 45};
+    // uint32_t     pending_rb = possible_values[(int)((double)rand() / ((double)RAND_MAX + 1) * 22)];
+    // uint32_t pending_rb = possible_values[tti_tx_ul.to_uint() % 22];
     uint32_t     pending_rb = user.get_required_prb_ul(cc_cfg->enb_cc_idx, pending_data);
     prb_interval alloc      = find_contiguous_ul_prbs(pending_rb, tti_sched->get_ul_mask());
     if (alloc.empty()) {
-      continue;
+      logger.info("SCHED: Alloc empty");
+      verify_action(0);
+      return;
     }
     alloc_result ret = tti_sched->alloc_ul_user(&user, alloc);
     if (ret == alloc_result::no_cch_space) {
       logger.info(
           "SCHED: rnti=0x%x, cc=%d, Couldn't find space in PDCCH for UL tx", user.get_rnti(), cc_cfg->enb_cc_idx);
+      verify_action(0);
+      return;
     }
+    verify_action(1);
   }
 }
+
+void sched_time_rr::verify_action(uint32_t verify_action_int) {
+	sched_verify_action verify_action_struct = {verify_action_int};
+	memcpy(sched_vrf_action_buffer, &verify_action_struct, sizeof(verify_action_struct));
+	int bytes_write = write(fd_verify_action, sched_vrf_action_buffer, sizeof(sched_vrf_action_buffer));
+}
+
 
 } // namespace srsenb

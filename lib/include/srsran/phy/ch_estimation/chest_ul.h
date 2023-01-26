@@ -56,6 +56,7 @@ typedef struct SRSRAN_API {
   float    epre_dBfs;
   float    snr;
   float    snr_db;
+  float    snr_db_custom;
   float    cfo_hz;
   float    ta_us;
 } srsran_chest_ul_res_t;

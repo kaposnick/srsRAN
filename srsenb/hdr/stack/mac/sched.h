@@ -75,7 +75,7 @@ public:
   int ul_sr_info(uint32_t tti, uint16_t rnti) override;
   int ul_bsr(uint16_t rnti, uint32_t lcg_id, uint32_t bsr) final;
   int ul_phr(uint16_t rnti, int phr, uint32_t ul_nof_prb) final;
-  int ul_snr_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise, uint32_t ul_ch_code) final;
+  int ul_snr_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise, float snr_custom, uint32_t ul_ch_code) final;
 
   int dl_sched(uint32_t tti, uint32_t enb_cc_idx, dl_sched_res_t& sched_result) final;
   int ul_sched(uint32_t tti, uint32_t enb_cc_idx, ul_sched_res_t& sched_result) final;

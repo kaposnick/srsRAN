@@ -292,9 +292,9 @@ void sched_ue::set_dl_sb_cqi(tti_point tti_rx, uint32_t enb_cc_idx, uint32_t sb_
   cells[enb_cc_idx].set_dl_sb_cqi(tti_rx, sb_idx, cqi);
 }
 
-void sched_ue::set_ul_snr(tti_point tti_rx, uint32_t enb_cc_idx, float snr, float noise_dbm, uint32_t ul_ch_code)
+void sched_ue::set_ul_snr(tti_point tti_rx, uint32_t enb_cc_idx, float snr, float noise_dbm, float snr_custom, uint32_t ul_ch_code)
 {
-  cells[enb_cc_idx].set_ul_snr(tti_rx, snr, noise_dbm, ul_ch_code);
+  cells[enb_cc_idx].set_ul_snr(tti_rx, snr, noise_dbm, snr_custom, ul_ch_code);
 }
 
 /*******************************************************

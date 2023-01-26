@@ -365,6 +365,10 @@ static void chest_ul_estimate(srsran_chest_ul_t*     q,
   // Convert measurements in logarithm scale
   res->snr_db             = srsran_convert_power_to_dB(res->snr);
   res->noise_estimate_dbm = srsran_convert_power_to_dBm(res->noise_estimate);
+  float custom_snr_calculation = srsran_convert_power_to_dB(res->snr * (nrefs_sym / 12));
+  res->snr_db_custom      = custom_snr_calculation;
+
+  ERROR("Channel estimate custom: snr:%.4f, custom:%.4f", res->snr_db, custom_snr_calculation);
 }
 
 int srsran_chest_ul_estimate_pusch(srsran_chest_ul_t*     q,

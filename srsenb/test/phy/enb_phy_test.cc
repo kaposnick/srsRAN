@@ -478,7 +478,7 @@ public:
 
     return SRSRAN_SUCCESS;
   }
-  int snr_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, float snr_db, float noise_dbm, ul_channel_t ch) override
+  int snr_info(uint32_t tti, uint16_t rnti, uint32_t cc_idx, float snr_db, float noise_dbm, float snr_db_custom, ul_channel_t ch) override
   {
     notify_snr_info();
     return 0;

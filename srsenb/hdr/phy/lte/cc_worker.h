@@ -105,6 +105,8 @@ private:
       uint16_t mcs;
       uint16_t rbs;
       uint32_t snr;
+      uint32_t noise;
+      uint32_t snr_custom;
   	} shced_ai_result;
 
   // Class to store user information

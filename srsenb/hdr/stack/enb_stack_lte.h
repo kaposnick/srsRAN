@@ -83,9 +83,9 @@ public:
   {
     return mac.sb_cqi_info(tti, rnti, cc_idx, sb_idx, cqi_value);
   }
-  int snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t cc_idx, float snr_db, float noise_dbm, ul_channel_t ch) final
+  int snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t cc_idx, float snr_db, float noise_dbm, float snr_db_custom, ul_channel_t ch) final
   {
-    return mac.snr_info(tti_rx, rnti, cc_idx, snr_db, noise_dbm, ch);
+    return mac.snr_info(tti_rx, rnti, cc_idx, snr_db, noise_dbm, snr_db_custom, ch);
   }
   int ta_info(uint32_t tti, uint16_t rnti, float ta_us) override { return mac.ta_info(tti, rnti, ta_us); }
   int ack_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t tb_idx, bool ack) final

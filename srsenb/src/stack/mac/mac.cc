@@ -421,7 +421,7 @@ int mac::sb_cqi_info(uint32_t tti, uint16_t rnti, uint32_t enb_cc_idx, uint32_t 
   return SRSRAN_SUCCESS;
 }
 
-int mac::snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise_dbm, ul_channel_t ch)
+int mac::snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr, float noise_dbm, float snr_custom, ul_channel_t ch)
 {
   logger.set_context(tti_rx);
   srsran::rwlock_read_guard lock(rwlock);
@@ -432,7 +432,7 @@ int mac::snr_info(uint32_t tti_rx, uint16_t rnti, uint32_t enb_cc_idx, float snr
 
   rrc_h->set_radiolink_ul_state(rnti, snr >= args.rlf_min_ul_snr_estim);
 
-  return scheduler.ul_snr_info(tti_rx, rnti, enb_cc_idx, snr, noise_dbm, (uint32_t)ch);
+  return scheduler.ul_snr_info(tti_rx, rnti, enb_cc_idx, snr, noise_dbm, snr_custom, (uint32_t)ch);
 }
 
 int mac::ta_info(uint32_t tti, uint16_t rnti, float ta_us)

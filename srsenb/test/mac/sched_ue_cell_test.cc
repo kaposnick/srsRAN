@@ -50,8 +50,8 @@ void test_neg_phr_scenario()
   float     snr = 20;
   tti_point tti{0};
   for (; ue_cc.tpc_fsm.get_ul_snr_estim(0) < snr - 2; ++tti) {
-    ue_cc.set_ul_snr(tti, snr, 0, 0);
-    ue_cc.set_ul_snr(tti, snr, 0, 1);
+    ue_cc.set_ul_snr(tti, snr, 0,0,0);
+    ue_cc.set_ul_snr(tti, snr, 0,0,1);
     ue_cc.tpc_fsm.set_phr(-5, 1);
     ue_cc.new_tti(tti);
   }
