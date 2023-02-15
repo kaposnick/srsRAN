@@ -45,7 +45,7 @@ public:
   void                   set_dl_tti_mask(uint8_t* tti_mask, uint32_t nof_sfs);
   const cc_sched_result& generate_tti_result(srsran::tti_point tti_rx);
   int                    dl_rach_info(dl_sched_rar_info_t rar_info);
-  void                   update_beta_factor(uint32_t beta_factor);
+  void                   update_beta_factor(uint32_t beta_factor, uint16_t gain);
 
   // getters
   const ra_sched* get_ra_sched() const { return ra_sched_ptr.get(); }

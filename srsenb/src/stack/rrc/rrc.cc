@@ -142,7 +142,7 @@ void rrc::stop()
   users.clear();
 }
 
-void rrc::update_beta_factor(uint32_t beta_factor) {
+void rrc::update_beta_factor(uint32_t beta_factor, uint16_t gain) {
 
 }
 

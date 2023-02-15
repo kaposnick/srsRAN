@@ -48,7 +48,7 @@ public:
 
   virtual void cmd_cell_gain(uint32_t cell_idx, float gain_db) = 0;
 
-  virtual int update_beta_factor(const uint32_t beta_factor) = 0;
+  virtual int update_beta_factor(const uint32_t beta_factor, const uint16_t gain) = 0;
 };
 
 } // namespace srsenb

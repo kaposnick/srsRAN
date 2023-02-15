@@ -24,7 +24,7 @@
 
 namespace srsenb {
 
-void sched_base::sched_update_beta_factor(uint32_t beta_factor){
+void sched_base::sched_update_beta_factor(uint32_t beta_factor, uint16_t gain){
   std::cout << "Sched base updating beta factor " << beta_factor << std::endl;
 }
 

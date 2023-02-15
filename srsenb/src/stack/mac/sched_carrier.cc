@@ -495,8 +495,8 @@ int sched::carrier_sched::dl_rach_info(dl_sched_rar_info_t rar_info)
   return ra_sched_ptr->dl_rach_info(rar_info);
 }
 
-void sched::carrier_sched::update_beta_factor(uint32_t beta_factor) {
-	sched_algo->sched_update_beta_factor(beta_factor);
+void sched::carrier_sched::update_beta_factor(uint32_t beta_factor, uint16_t gain) {
+	sched_algo->sched_update_beta_factor(beta_factor, gain);
 }
 
 } // namespace srsenb

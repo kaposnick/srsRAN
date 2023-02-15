@@ -40,9 +40,10 @@ void phy_common::reset()
   }
 }
 
-int phy_common::update_beta_factor(const uint32_t beta_factor) {
+int phy_common::update_beta_factor(const uint32_t beta_factor, const uint16_t gain) {
 	params.pusch_beta_factor = beta_factor;
-	ue_db.update_beta_factor(beta_factor);
+  params.pusch_gain_level = gain;
+	ue_db.update_beta_factor(beta_factor, gain);
 	return 0;
 }
 

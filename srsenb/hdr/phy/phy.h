@@ -56,7 +56,7 @@ public:
             stack_interface_phy_lte*     stack_,
             enb_time_interface*          enb_);
 
-  int update_beta_factor(const uint32_t beta_factor) override;
+  int update_beta_factor(const uint32_t beta_factor, const uint16_t gain) override;
 
   void stop() override;
 

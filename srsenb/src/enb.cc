@@ -44,9 +44,9 @@ enb::~enb()
   nr_stack.reset();
 }
 
-int enb::update_beta_factor(const uint32_t beta_factor) {
-	phy->update_beta_factor(beta_factor);
-	eutra_stack->update_beta_factor(beta_factor);
+int enb::update_beta_factor(const uint32_t beta_factor, const uint16_t gain) {
+	phy->update_beta_factor(beta_factor, gain);
+	eutra_stack->update_beta_factor(beta_factor, gain);
 	return 0;
 }
 

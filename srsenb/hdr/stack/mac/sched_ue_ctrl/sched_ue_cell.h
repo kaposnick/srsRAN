@@ -56,6 +56,9 @@ struct sched_ue_cell {
   int get_dl_cqi() const;
   int get_dl_cqi(const rbgmask_t& rbgs) const;
   int get_ul_cqi() const;
+  float get_ul_snr_coeff() const {
+    return ul_snr_coeff;
+  }
 
   uint32_t get_aggr_level(uint32_t nof_bits) const;
 

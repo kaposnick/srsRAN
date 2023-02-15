@@ -54,9 +54,10 @@ sched_time_rr::sched_time_rr(const sched_cell_params_t& cell_params_, const sche
 	}
 }
 
-void sched_time_rr::sched_update_beta_factor(uint32_t beta_factor) {
-	std::cout << "SCHED AI Updating beta factor " << beta_factor << std::endl;
+void sched_time_rr::sched_update_beta_factor(uint32_t beta_factor, uint16_t gain) {
+	std::cout << "SCHED AI Updating beta factor " << beta_factor << " gain " << gain << std::endl;
 	this->beta_factor = beta_factor;
+  this->gain        = gain;
 }
 
 /*****************************************************************
@@ -182,8 +183,9 @@ void sched_time_rr::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, s
 			(uint16_t) tti_tx_ul.to_uint(),
 			(uint16_t) user.get_rnti(),
 			(uint32_t) pending_data,
-			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_estim(),
-      (uint16_t) this->beta_factor };
+			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_estim() * 1000,
+      (uint16_t) this->beta_factor, 
+      (uint16_t) this->gain };
 	  memcpy(sched_tx_buffer, &ai_tx, sizeof(ai_tx));
 	  int bytes_write = write(fd_to_ai_sched, sched_tx_buffer, sizeof(sched_tx_buffer)); 
 	  int bytes_read = read(fd_from_ai_sched, sched_rcv_buffer, sizeof(sched_rcv_buffer));

@@ -245,7 +245,7 @@ private:
   inline uint32_t _count_nof_configured_scell(uint16_t rnti);
 
 public:
-  void update_beta_factor(uint32_t beta_factor);
+  void update_beta_factor(uint32_t beta_factor, uint16_t gain);
 
   /**
    * Initialises the UE database with the stack and cell list

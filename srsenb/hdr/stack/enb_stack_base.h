@@ -97,7 +97,7 @@ public:
 
   virtual void tti_clock() = 0;
 
-  virtual void update_beta_factor(uint32_t beta_factor) = 0;
+  virtual void update_beta_factor(uint32_t beta_factor, uint16_t gain) = 0;
 };
 
 } // namespace srsenb

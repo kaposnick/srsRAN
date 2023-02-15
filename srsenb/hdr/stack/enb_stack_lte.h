@@ -59,7 +59,7 @@ public:
   void stop() final;
   std::string get_type() final;
   bool        get_metrics(stack_metrics_t* metrics) final;
-  void        update_beta_factor(uint32_t beta_factor) override final;
+  void        update_beta_factor(uint32_t beta_factor, uint16_t gain) override final;
 
   /* PHY-MAC interface */
   int  sr_detected(uint32_t tti, uint16_t rnti) final { return mac.sr_detected(tti, rnti); }

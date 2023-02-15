@@ -546,10 +546,10 @@ static void* input_beta_loop(srsenb::enb* enb) {
   }
   std::cout << "Listening for beta factors " << std::endl;
   // struct pollfd pfd = {beta_fifo_fd, POLLIN, 0};
-  char buf[4];
+  char buf[6];
   while (running) {
     size_t total_read = 0;
-    size_t total_left = 4;
+    size_t total_left = 6;
     char *buffer_ptr = buf;
     while (total_left > 0) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -566,10 +566,12 @@ static void* input_beta_loop(srsenb::enb* enb) {
     }
     // cout << "Buf content: " << buf << endl;
     int32_t beta;
+    uint16_t gain;
     memcpy(&beta, buf, sizeof(int32_t));
+    memcpy(&gain, buf + 4, sizeof(uint16_t));
     // cout << "Updating beta factor " << beta << std::endl;
     if (beta <= 2500) {
-      enb->update_beta_factor(beta);
+      enb->update_beta_factor(beta, gain);
     }
   }
   return nullptr;
