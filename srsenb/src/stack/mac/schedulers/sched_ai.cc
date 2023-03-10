@@ -18,6 +18,15 @@ sched_ai::sched_ai(const sched_cell_params_t& cell_params_, const sched_interfac
 	if (fd_to_ai_sched < 0) {
 		std::cerr << "Error opening " << fd_to_ai_sched << std::endl;
 	}
+
+	if (report_to_orchestrator) {
+		mkfifo(orchestrator, 0666);
+		fd_to_orchestrator = open(orchestrator, O_CREAT | O_WRONLY, 0666);
+		if (fd_to_orchestrator < 0) {
+			std::cerr << "Error opening " << fd_to_orchestrator << std::endl;
+		}	
+	}
+
 	mkfifo(fifo_verify_action, 0666);
 	fd_verify_action = open(fifo_verify_action, O_CREAT | O_WRONLY, 0666);
 	if (fd_verify_action < 0) {
@@ -135,14 +144,22 @@ void sched_ai::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t
 	}
 
 	sched_ue_cell* ue_cell = user.find_ue_carrier(cc_cfg->enb_cc_idx);
-	float snr = ue_cell->tpc_fsm.get_ul_snr_custom_estim();
+	float snr = ue_cell->tpc_fsm.get_ul_snr_custom_estim() * 1000;
 	float coeff = ue_cell->get_ul_snr_coeff();
 
+	if (report_to_orchestrator && snr >= 18000 && snr <= 42000) {
+		sched_to_orch orch_ = {
+			(uint32_t) tti_sched->get_tti_tx_ul().to_uint(),
+			(int32_t) snr
+		};
+		memcpy(sched_tx_orch_buffer, &orch_, sizeof(sched_to_orch));	
+		int bytes_write = write(fd_to_orchestrator, sched_tx_orch_buffer, sizeof(sched_tx_orch_buffer));
+	}
 	sched_ai_tx ai_tx = {
 			(uint16_t) tti_sched->get_tti_tx_ul().to_uint(),
 			(uint16_t) user.get_rnti(),
 			(uint32_t) pending_data,
-			(int32_t) ( (snr) * 1000),
+			(int32_t) snr,
 	        (uint16_t) this->beta_factor,
 			(uint16_t) this->gain };
 	memcpy(sched_tx_buffer, &ai_tx, sizeof(ai_tx));

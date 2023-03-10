@@ -552,7 +552,7 @@ static void* input_beta_loop(srsenb::enb* enb) {
     size_t total_left = 6;
     char *buffer_ptr = buf;
     while (total_left > 0) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
       ssize_t current = read(beta_fifo_fd, buffer_ptr, total_left);
       // cout << "read " << current << endl;
       if (current < 0) {

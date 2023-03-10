@@ -27,8 +27,14 @@ private:
 	const char* fifo_out = "/tmp/actor_in";
 	const char* fifo_in  = "/tmp/actor_out";
 	const char* fifo_verify_action = "/tmp/verify_action";
+	const char* orchestrator = "/tmp/beta_from_srs";
 
-	int fd_to_ai_sched, fd_from_ai_sched, fd_verify_action;
+	int fd_to_ai_sched, fd_from_ai_sched, fd_verify_action, fd_to_orchestrator;
+
+	typedef struct {
+		uint32_t tti;
+		int32_t snr;
+	} sched_to_orch;
 
 	typedef struct {
 		uint32_t verify_action;
@@ -59,6 +65,8 @@ private:
 	char sched_tx_buffer[sizeof(sched_ai_tx)];
 	char sched_rcv_buffer[sizeof(sched_ai_rcv)];
 	char sched_vrf_action_buffer[sizeof(sched_verify_action)];
+	char sched_tx_orch_buffer[sizeof(sched_to_orch)];
+	bool report_to_orchestrator = true;
 
 	void sched_ul_retxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
 	void sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
