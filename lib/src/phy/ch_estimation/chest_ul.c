@@ -362,8 +362,39 @@ static void chest_ul_estimate(srsran_chest_ul_t*     q,
     res->snr = NAN;
   }
 
+  uint32_t nof_prb = nrefs_sym / SRSRAN_NRE;
+  float snr_per_prb[nof_prb], snr_std = 0, snr_min = FLT_MAX, snr_max = 0;
+  uint32_t prb_min = -1, prb_max = -1;
+  for(uint32_t prb_index = 0; prb_index < nof_prb; prb_index++) {
+    float result = 0;
+    for(uint32_t slot_index = 0; slot_index < nslots; slot_index++) {
+      result += srsran_vec_avg_power_cf(&q->pilot_recv_signal[slot_index * prb_index], SRSRAN_NRE) / res -> noise_estimate;
+    }
+    result /= nslots;
+    snr_per_prb[prb_index] = result;
+    if (result > snr_max) {
+      snr_max = result;
+      prb_min = prb_index;
+    }
+    if (result < snr_min) {
+      snr_min = result;
+      prb_max = prb_index;
+    }
+  }
+
+  for(uint32_t prb_index = 0; prb_index < nof_prb; prb_index++) {
+    snr_std += powf(snr_per_prb[prb_index] - res->snr, 2);
+  } 
+  snr_std /= nof_prb;
+  snr_std = sqrtf(snr_std);
+
   // Convert measurements in logarithm scale
   res->snr_db             = srsran_convert_power_to_dB(res->snr);
+  res->snr_min_db         = srsran_convert_power_to_dB(snr_min);
+  res->prb_min            = prb_min;
+  res->snr_max_db         = srsran_convert_power_to_dB(snr_max);
+  res->prb_max            = prb_max;
+  res->snr_std_db         = srsran_convert_power_to_dB(snr_std);
   res->noise_estimate_dbm = srsran_convert_power_to_dBm(res->noise_estimate);
   float custom_snr_calculation = srsran_convert_power_to_dB(res->snr * (nrefs_sym / 12));
   res->snr_db_custom      = custom_snr_calculation;

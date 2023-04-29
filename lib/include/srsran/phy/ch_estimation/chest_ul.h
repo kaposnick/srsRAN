@@ -57,6 +57,11 @@ typedef struct SRSRAN_API {
   float    snr;
   float    snr_db;
   float    snr_db_custom;
+  float    snr_min_db;
+  uint32_t prb_min;
+  float    snr_max_db;
+  uint32_t prb_max;
+  float    snr_std_db;
   float    cfo_hz;
   float    ta_us;
 } srsran_chest_ul_res_t;

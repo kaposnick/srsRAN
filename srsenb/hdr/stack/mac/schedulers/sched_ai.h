@@ -66,7 +66,7 @@ private:
 	char sched_rcv_buffer[sizeof(sched_ai_rcv)];
 	char sched_vrf_action_buffer[sizeof(sched_verify_action)];
 	char sched_tx_orch_buffer[sizeof(sched_to_orch)];
-	bool report_to_orchestrator = true;
+	bool report_to_orchestrator = false;
 
 	void sched_ul_retxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
 	void sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, size_t prio_idx);
