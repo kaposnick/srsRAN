@@ -323,10 +323,10 @@ static int pusch_encode(srsran_ue_ul_t* q, srsran_ul_sf_cfg_t* sf, srsran_ue_ul_
     srsran_ofdm_tx_sf(&q->fft);
 
     apply_cfo(q, cfg);
-    float before_normalization = srsran_vec_avg_power_cf(q->out_buffer, SRSRAN_SF_LEN_PRB(q->cell.nof_prb));
+    // float before_normalization = srsran_vec_avg_power_cf(q->out_buffer, SRSRAN_SF_LEN_PRB(q->cell.nof_prb));
     apply_norm(q, cfg, q->cell.nof_prb / 15 / sqrtf(cfg->ul_cfg.pusch.grant.L_prb) / 2);
-    float after_normalization = srsran_vec_avg_power_cf(q->out_buffer, SRSRAN_SF_LEN_PRB(q->cell.nof_prb));
-    ERROR("UE UPLINK Power after IFFT: before:%.6f, after:%.6f", before_normalization, after_normalization);
+    // float after_normalization = srsran_vec_avg_power_cf(q->out_buffer, SRSRAN_SF_LEN_PRB(q->cell.nof_prb));
+    // ERROR("UE UPLINK Power after IFFT: before:%.6f, after:%.6f", before_normalization, after_normalization);
     ret = SRSRAN_SUCCESS;
   }
 

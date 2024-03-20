@@ -183,7 +183,7 @@ void sched_time_rr::sched_ul_newtxs(sched_ue_list& ue_db, sf_sched* tti_sched, s
 			(uint16_t) tti_tx_ul.to_uint(),
 			(uint16_t) user.get_rnti(),
 			(uint32_t) pending_data,
-			(int32_t) user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_estim() * 1000,
+			(int32_t) (user.find_ue_carrier(cc_cfg->enb_cc_idx)->tpc_fsm.get_ul_snr_estim() * 1000),
       (uint16_t) this->beta_factor, 
       (uint16_t) this->gain };
 	  memcpy(sched_tx_buffer, &ai_tx, sizeof(ai_tx));
